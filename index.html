@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Claude Launcher</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* タイトルバー */
+    #titlebar {
+      -webkit-app-region: drag;
+      background: #1a1a1a;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      border-bottom: 1px solid #2a2a2a;
+      flex-shrink: 0;
+    }
+
+    #titlebar .title { font-size: 13px; font-weight: 600; color: #cc7832; letter-spacing: 0.5px; }
+
+    #titlebar .controls {
+      -webkit-app-region: no-drag;
+      display: flex;
+      gap: 6px;
+    }
+
+    #titlebar .controls button {
+      width: 12px; height: 12px;
+      border-radius: 50%; border: none; cursor: pointer;
+      /* transition: all は全プロパティ監視になるので opacity のみに絞る */
+      transition: opacity 0.2s;
+    }
+
+    #titlebar .controls button:hover { opacity: 0.75; }
+    #btn-minimize { background: #f1c40f; }
+    #btn-maximize { background: #2ecc71; }
+    #btn-close    { background: #e74c3c; }
+
+    /* メインコンテンツ */
+    #content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ヒーロー */
+    #hero { padding: 16px 24px 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+
+    #hero .logo {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #cc7832, #e8944a);
+      border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 20px rgba(204, 120, 50, 0.4);
+    }
+
+    #hero h1 { font-size: 16px; font-weight: 700; color: #fff; }
+    #hero p  { font-size: 11px; color: #555; }
+
+    /* クイック起動 */
+    #quick-launch { margin: 0 24px 12px; }
+
+    #btn-quick {
+      width: 100%; padding: 10px;
+      background: linear-gradient(135deg, #cc7832, #e8944a);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      /* transform と box-shadow と background のみ */
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    #btn-quick:hover {
+      background: linear-gradient(135deg, #d98840, #f0a055);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(204, 120, 50, 0.4);
+    }
+    #btn-quick:active { transform: translateY(0); }
+
+    /* Stats bar */
+    #stats-bar {
+      margin: 0 24px 12px;
+      background: #141414;
+      border: 1px solid #212121;
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex; flex-direction: column; gap: 9px;
+    }
+
+    .bar-row { display: flex; align-items: center; gap: 10px; }
+
+    .bar-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.9px;
+      color: #3a3a3a; text-transform: uppercase; flex-shrink: 0; width: 48px;
+    }
+
+    /* モデル pills */
+    .model-pills { display: flex; gap: 4px; flex: 1; }
+
+    .model-pill {
+      flex: 1; background: transparent; color: #484848;
+      border: 1px solid #242424; border-radius: 6px;
+      padding: 4px 2px; font-size: 11px; cursor: pointer;
+      /* color と border-color のみ */
+      transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+      text-align: center; white-space: nowrap;
+    }
+    .model-pill:hover  { color: #777; border-color: #3a3a3a; }
+    .model-pill.active { background: rgba(204,120,50,0.1); color: #cc7832; border-color: rgba(204,120,50,0.5); font-weight: 600; }
+
+    /* 使用量 */
+    .usage-nums {
+      flex: 1; display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: #3a3a3a; flex-wrap: nowrap; overflow: hidden;
+    }
+    .usage-val  { color: #707070; font-weight: 600; }
+    .usage-unit { color: #3a3a3a; }
+    .usage-dot  { color: #2a2a2a; }
+
+    /* 使用量バー */
+    .usage-bar-wrap { flex: 1; display: flex; align-items: center; gap: 7px; overflow: hidden; min-width: 0; }
+    .usage-bar { flex: 1; height: 5px; background: #1e1e1e; border-radius: 3px; overflow: hidden; border: 1px solid #252525; min-width: 30px; }
+    .usage-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #cc7832, #e8944a); transition: width 0.5s ease; }
+    .usage-bar-fill.warn   { background: linear-gradient(90deg, #e8944a, #f0c040); }
+    .usage-bar-fill.danger { background: #e74c3c; }
+    .usage-pct { font-size: 11px; font-weight: 700; flex-shrink: 0; color: #707070; white-space: nowrap; }
+    .usage-pct.warn   { color: #e8944a; }
+    .usage-pct.danger { color: #e74c3c; }
+
+    .usage-limit-btn {
+      font-size: 10px; color: #2e2e2e; background: transparent;
+      border: none; cursor: pointer; white-space: nowrap;
+      transition: color 0.2s; flex-shrink: 0; padding: 0;
+    }
+    .usage-limit-btn:hover { color: #666; }
+
+    #usage-limit-input {
+      background: #0f0f0f; border: 1px solid rgba(204,120,50,0.6);
+      border-radius: 4px; color: #cc7832; font-size: 10px;
+      padding: 2px 6px; width: 62px; outline: none; user-select: text;
+    }
+
+    #btn-usage-mode {
+      background: transparent; color: #333; border: 1px solid #1e1e1e;
+      border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 700;
+      cursor: pointer; transition: color 0.2s, border-color 0.2s;
+      flex-shrink: 0; letter-spacing: 0.3px;
+    }
+    #btn-usage-mode:hover { color: #777; border-color: #3a3a3a; }
+
+    #btn-usage-link {
+      background: transparent; color: #3a3a3a; border: 1px solid #222;
+      border-radius: 5px; padding: 2px 8px; font-size: 10px; cursor: pointer;
+      transition: color 0.2s, border-color 0.2s; flex-shrink: 0; white-space: nowrap;
+    }
+    #btn-usage-link:hover { color: #7db8e8; border-color: #4a7fa8; }
+
+    /* プロジェクトセクション */
+    #projects-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0 24px 20px; }
+
+    #projects-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; position: relative; }
+    #projects-header .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #555; }
+
+    .header-right { display: flex; align-items: center; gap: 6px; }
+    .view-toggle  { display: flex; gap: 2px; }
+
+    .view-btn {
+      background: transparent; color: #444; border: 1px solid #2a2a2a;
+      border-radius: 5px; padding: 3px 8px; font-size: 14px; cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background-color 0.15s; line-height: 1;
+    }
+    .view-btn:hover  { color: #888; border-color: #444; }
+    .view-btn.active { color: #cc7832; border-color: #cc7832; background: rgba(204,120,50,0.08); }
+
+    #btn-add {
+      background: #2a2a2a; color: #cc7832; border: 1px solid #333;
+      border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    #btn-add:hover { background: #333; border-color: #cc7832; }
+
+    #btn-settings {
+      background: transparent; color: #444; border: 1px solid #2a2a2a;
+      border-radius: 5px; padding: 3px 7px; font-size: 13px; cursor: pointer;
+      transition: color 0.15s, border-color 0.15s; line-height: 1;
+    }
+    #btn-settings:hover  { color: #888; border-color: #444; }
+    #btn-settings.active { color: #cc7832; border-color: #cc7832; background: rgba(204,120,50,0.08); }
+
+    #settings-panel {
+      position: absolute; top: calc(100% + 4px); right: 0; z-index: 200;
+      background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 10px;
+      padding: 10px 14px; min-width: 185px;
+      display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    #settings-panel.open { display: block; }
+
+    .settings-title {
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; color: #444; margin-bottom: 8px;
+    }
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 5px 0;
+    }
+    .toggle-row + .toggle-row { border-top: 1px solid #1e1e1e; }
+    .toggle-label { font-size: 12px; color: #888; cursor: pointer; }
+    .toggle-switch { position: relative; width: 30px; height: 17px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-slider {
+      position: absolute; inset: 0; background: #2a2a2a;
+      border-radius: 9px; cursor: pointer; transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; width: 11px; height: 11px;
+      left: 3px; top: 3px; background: #555; border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: rgba(204,120,50,0.25); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(13px); background: #cc7832; }
+
+    /* ---- ボタン非表示設定（グローバル） ---- */
+    body.hide-explorer .project-item .icon-btn.explorer { display: none; }
+    body.hide-vscode   .project-item .icon-btn.vscode   { display: none; }
+    body.hide-run-app  .project-item .icon-btn.run-app  { display: none; }
+    body.hide-launch   .project-item .launch-btn        { display: none; }
+    body.hide-delete   .project-item .delete-btn        { display: none; }
+
+    /* ---- プロジェクト個別オーバーライド ---- */
+    .project-item[data-show-explorer] .icon-btn.explorer { display: inline-flex !important; }
+    .project-item[data-show-vscode]   .icon-btn.vscode   { display: inline-flex !important; }
+    .project-item[data-show-run-app]  .icon-btn.run-app  { display: inline-flex !important; }
+    .project-item[data-show-launch]   .launch-btn        { display: inline-flex !important; }
+    .project-item[data-show-delete]   .delete-btn        { display: inline-flex !important; }
+    .project-item[data-hide-explorer] .icon-btn.explorer { display: none !important; }
+    .project-item[data-hide-vscode]   .icon-btn.vscode   { display: none !important; }
+    .project-item[data-hide-run-app]  .icon-btn.run-app  { display: none !important; }
+    .project-item[data-hide-launch]   .launch-btn        { display: none !important; }
+    .project-item[data-hide-delete]   .delete-btn        { display: none !important; }
+
+    /* ---- プロジェクト個別設定ボタン ---- */
+    .proj-gear-btn {
+      background: transparent; color: #1e1e1e; border: none;
+      cursor: pointer; font-size: 12px; padding: 2px 4px;
+      transition: color 0.2s; flex-shrink: 0; line-height: 1;
+    }
+    .project-item:hover .proj-gear-btn { color: #444; }
+    .proj-gear-btn:hover { color: #cc7832 !important; }
+    .proj-gear-btn.has-override { color: #555 !important; }
+    .project-item:hover .proj-gear-btn.has-override { color: #cc7832 !important; }
+
+    .card-top-right { display: flex; align-items: center; gap: 2px; }
+    .view-card .proj-gear-btn { color: #333; }
+
+    /* ---- 個別設定パネル ---- */
+    #proj-settings-panel {
+      position: fixed; z-index: 300;
+      background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 10px;
+      padding: 10px 14px; min-width: 200px;
+      display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    #proj-settings-panel.open { display: block; }
+    .proj-settings-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px; gap: 8px;
+    }
+    #proj-settings-name { font-size: 11px; font-weight: 600; color: #cc7832; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
+    .btn-proj-reset-all {
+      font-size: 10px; color: #3a3a3a; background: transparent;
+      border: 1px solid #2a2a2a; border-radius: 4px; padding: 2px 6px;
+      cursor: pointer; transition: color 0.2s, border-color 0.2s; white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-proj-reset-all:hover { color: #e74c3c; border-color: #444; }
+    .proj-row-reset {
+      font-size: 12px; color: #cc7832; background: transparent;
+      border: none; cursor: pointer; padding: 0 2px; transition: opacity 0.2s; line-height: 1;
+    }
+    .proj-row-reset:hover { opacity: 0.7; }
+
+    .icon-picker-section { margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e1e1e; }
+    .icon-picker-label { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #444; margin-bottom: 6px; }
+    .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; }
+    .icon-option {
+      background: transparent; border: 1px solid #222; border-radius: 5px;
+      padding: 4px 2px; font-size: 14px; cursor: pointer; line-height: 1;
+      transition: border-color 0.15s, background-color 0.15s; text-align: center;
+    }
+    .icon-option:hover  { border-color: #444; background: #222; }
+    .icon-option.active { border-color: rgba(204,120,50,0.6); background: rgba(204,120,50,0.1); }
+
+    /* 検索 */
+    #search-bar { position: relative; margin-bottom: 9px; }
+
+    #search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #444; pointer-events: none; }
+
+    #search-input {
+      width: 100%; background: #1a1a1a; border: 1px solid #2a2a2a;
+      border-radius: 8px; padding: 7px 30px 7px 30px; color: #e0e0e0;
+      font-size: 12px; outline: none; transition: border-color 0.2s; user-select: text;
+    }
+    #search-input:focus       { border-color: #cc7832; }
+    #search-input::placeholder { color: #3a3a3a; }
+
+    #search-clear {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: transparent; border: none; color: #444; font-size: 13px;
+      cursor: pointer; padding: 2px 4px; display: none; transition: color 0.2s;
+    }
+    #search-clear:hover    { color: #888; }
+    #search-clear.visible  { display: block; }
+
+    /* プロジェクトリスト */
+    #projects-list {
+      flex: 1; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    #projects-list::-webkit-scrollbar       { width: 4px; }
+    #projects-list::-webkit-scrollbar-track { background: transparent; }
+    #projects-list::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+    /* カードビュー */
+    #projects-list.view-card {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 8px; align-content: start;
+    }
+
+    /* リストアイテム共通 */
+    .project-item {
+      display: flex; align-items: center;
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      border-radius: 8px; padding: 10px 12px; gap: 10px;
+      /* background と border-color のみ（all は回避） */
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+    .project-item:hover { background: #222; border-color: #3a3a3a; }
+
+    .drag-handle {
+      color: #2a2a2a; font-size: 15px; cursor: grab; flex-shrink: 0;
+      line-height: 1; transition: color 0.2s; padding: 0 2px;
+    }
+    .project-item:hover .drag-handle { color: #555; }
+    .drag-handle:active { cursor: grabbing; }
+
+    .project-item.dragging  { opacity: 0.35; border-color: #cc7832; }
+    .project-item.drag-over { border-color: #cc7832; background: #252525; box-shadow: 0 0 0 2px rgba(204,120,50,0.2); }
+
+    .project-item .icon { font-size: 18px; flex-shrink: 0; }
+    .project-item .info { flex: 1; overflow: hidden; }
+    .project-item .name { font-size: 13px; font-weight: 600; color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .project-item .path { font-size: 11px; color: #555; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .project-item .launch-btn {
+      background: #cc7832; color: #fff; border: none;
+      border-radius: 5px; padding: 4px 10px;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: background-color 0.2s; flex-shrink: 0;
+    }
+    .project-item .launch-btn:hover { background: #d98840; }
+
+    .project-item .icon-btn {
+      background: transparent; color: #555; border: 1px solid #333;
+      border-radius: 5px; padding: 4px 8px; font-size: 11px; cursor: pointer;
+      transition: color 0.2s, border-color 0.2s; flex-shrink: 0;
+    }
+    .project-item .icon-btn:hover          { color: #e0e0e0; border-color: #666; }
+    .project-item .icon-btn.explorer:hover { color: #7db8e8; border-color: #7db8e8; }
+    .project-item .icon-btn.vscode:hover   { color: #4ec9b0; border-color: #4ec9b0; }
+    .project-item .icon-btn.run-app:hover  { color: #2ecc71; border-color: #2ecc71; }
+
+    .project-item .delete-btn {
+      background: transparent; color: #444; border: none;
+      cursor: pointer; font-size: 14px; padding: 2px 4px;
+      transition: color 0.2s; flex-shrink: 0;
+    }
+    .project-item .delete-btn:hover { color: #e74c3c; }
+
+    /* カードアイテム */
+    .view-card .project-item { flex-direction: column; align-items: stretch; padding: 12px 12px 10px; gap: 0; cursor: pointer; }
+    .view-card .project-item:hover { border-color: #cc7832; }
+    .view-card .drag-handle  { display: none; }
+
+    .view-card .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 7px; }
+    .view-card .project-item .icon       { font-size: 24px; }
+    .view-card .project-item .name       { font-size: 12px; margin-bottom: 3px; }
+    .view-card .project-item .path       { font-size: 10px; color: #444; margin-bottom: 10px; }
+    .view-card .project-item .delete-btn { font-size: 12px; padding: 1px 3px; }
+
+    .view-card .card-footer               { display: flex; gap: 4px; align-items: center; }
+    .view-card .card-footer .icon-btn     { padding: 4px 7px; font-size: 11px; }
+    .view-card .card-footer .launch-btn   { flex: 1; text-align: center; padding: 4px 6px; }
+
+    /* 検索ハイライト */
+    mark { background: rgba(204,120,50,0.25); color: #e8944a; border-radius: 2px; padding: 0 1px; }
+
+    .empty-state { text-align: center; color: #444; font-size: 13px; padding: 28px 0; line-height: 2; }
+    .view-card .empty-state { grid-column: 1 / -1; }
+
+    /* ---- レスポンシブ ---- */
+    body.compact-h #hero         { padding: 9px 24px 7px; gap: 4px; }
+    body.compact-h #hero .logo   { width: 34px; height: 34px; font-size: 18px; border-radius: 10px; }
+    body.compact-h #hero h1      { font-size: 14px; }
+    body.compact-h #hero p       { display: none; }
+    body.compact-h #quick-launch { margin-bottom: 8px; }
+    body.compact-h #stats-bar    { padding: 7px 12px; gap: 6px; margin-bottom: 8px; }
+    body.compact-h #projects-section { padding-bottom: 12px; }
+
+    body.narrow .project-item .path          { display: none; }
+    body.narrow .project-item .icon-btn.explorer { display: none; }
+    body.narrow .project-item .icon-btn.run-app  { display: none; }
+    body.narrow .bar-label                   { display: none; }
+    body.narrow .model-pill                  { font-size: 10px; padding: 3px 1px; }
+
+    body.wide #hero              { padding: 24px 32px 16px; }
+    body.wide #quick-launch      { margin: 0 32px 14px; }
+    body.wide #stats-bar         { margin: 0 32px 12px; }
+    body.wide #projects-section  { padding: 0 32px 24px; }
+
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #cc7832; color: #fff;
+      padding: 8px 20px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="titlebar">
+    <span class="title">⚡ Claude Launcher</span>
+    <div class="controls">
+      <button id="btn-minimize" title="最小化"></button>
+      <button id="btn-maximize" title="最大化"></button>
+      <button id="btn-close"    title="閉じる"></button>
+    </div>
+  </div>
+
+  <div id="content">
+    <div id="hero">
+      <div class="logo">🥭</div>
+      <h1>Claude Code Launcher</h1>
+      <p>プロジェクトを選んで即起動</p>
+    </div>
+
+    <div id="quick-launch">
+      <button id="btn-quick">📂 フォルダを選んで起動</button>
+    </div>
+
+    <div id="stats-bar">
+      <div class="bar-row">
+        <span class="bar-label">MODEL</span>
+        <div class="model-pills">
+          <button class="model-pill" data-model="claude-haiku-4-5-20251001">Haiku 4.5</button>
+          <button class="model-pill" data-model="claude-sonnet-4-6">Sonnet 4.6</button>
+          <button class="model-pill" data-model="claude-opus-4-6">Opus 4.6</button>
+        </div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">USAGE</span>
+        <div id="usage-display"><span class="usage-unit">読込中...</span></div>
+        <button id="btn-usage-mode" title="割合表示に切り替え">%</button>
+        <button id="btn-usage-link" title="Anthropic Console で確認">↗</button>
+      </div>
+    </div>
+
+    <div id="projects-section">
+      <div id="projects-header">
+        <span class="label">登録済みプロジェクト</span>
+        <div class="header-right">
+          <div class="view-toggle">
+            <button class="view-btn active" id="btn-view-list" title="リストビュー">≡</button>
+            <button class="view-btn"        id="btn-view-card" title="カードビュー">⊞</button>
+          </div>
+          <button id="btn-settings" title="表示設定">⚙</button>
+          <button id="btn-add">+ 追加</button>
+        </div>
+        <div id="settings-panel">
+          <div class="settings-title">表示設定</div>
+          <div class="toggle-row">
+            <label class="toggle-label" for="chk-explorer">📂 エクスプローラー</label>
+            <label class="toggle-switch"><input type="checkbox" id="chk-explorer" data-btn="explorer"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <label class="toggle-label" for="chk-vscode">🆚 VS Code</label>
+            <label class="toggle-switch"><input type="checkbox" id="chk-vscode" data-btn="vscode"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <label class="toggle-label" for="chk-run-app">▶ アプリ起動</label>
+            <label class="toggle-switch"><input type="checkbox" id="chk-run-app" data-btn="run-app"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <label class="toggle-label" for="chk-launch">⚡ Claude 起動</label>
+            <label class="toggle-switch"><input type="checkbox" id="chk-launch" data-btn="launch"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <label class="toggle-label" for="chk-delete">✕ 削除ボタン</label>
+            <label class="toggle-switch"><input type="checkbox" id="chk-delete" data-btn="delete"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div id="search-bar">
+        <span id="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="プロジェクトを検索...">
+        <button id="search-clear" title="クリア">✕</button>
+      </div>
+
+      <div id="projects-list"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div id="proj-settings-panel">
+    <div class="proj-settings-header">
+      <span id="proj-settings-name"></span>
+      <button class="btn-proj-reset-all" id="proj-reset-all">すべてリセット</button>
+    </div>
+    <div id="proj-settings-rows"></div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron')
+    const path = require('path')
+    const fs   = require('fs')
+
+    // ---- 状態 ----
+    let currentView  = localStorage.getItem('ccl-view') || 'list'
+    let currentQuery = ''
+    let currentModel = 'claude-sonnet-4-6'
+    let allProjects  = []
+
+    const MODELS = {
+      'claude-haiku-4-5-20251001': 'Haiku 4.5',
+      'claude-sonnet-4-6':         'Sonnet 4.6',
+      'claude-opus-4-6':           'Opus 4.6',
+    }
+    const DEFAULT_MODEL = 'claude-sonnet-4-6'
+
+    // ---- アプリ検出 ----
+    const _appCache = new Map()
+    function detectApp(folderPath) {
+      if (_appCache.has(folderPath)) return _appCache.get(folderPath)
+      let result = null
+      try {
+        // Electron アプリ検出（優先）
+        const electronExe = path.join(folderPath, 'node_modules', 'electron', 'dist', 'electron.exe')
+        if (fs.existsSync(electronExe)) {
+          result = { type: 'electron', label: '起動', cmd: null }
+          _appCache.set(folderPath, result)
+          return result
+        }
+        const pkgPath = path.join(folderPath, 'package.json')
+        if (fs.existsSync(pkgPath)) {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+          const scripts = pkg.scripts || {}
+          const preferred = ['dev', 'start', 'serve', 'preview']
+          const found = preferred.find(s => scripts[s]) || Object.keys(scripts)[0]
+          if (found) result = { cmd: found === 'start' ? 'npm start' : `npm run ${found}`, label: found }
+        }
+        if (!result && fs.existsSync(path.join(folderPath, 'Cargo.toml'))) {
+          result = { cmd: 'cargo run', label: 'run' }
+        }
+        if (!result && fs.existsSync(path.join(folderPath, 'go.mod'))) {
+          result = { cmd: 'go run .', label: 'run' }
+        }
+        if (!result) {
+          for (const f of ['main.py', 'app.py', 'run.py', 'server.py']) {
+            if (fs.existsSync(path.join(folderPath, f))) {
+              result = { cmd: `python ${f}`, label: 'run' }
+              break
+            }
+          }
+        }
+        if (!result && fs.existsSync(path.join(folderPath, 'Makefile'))) {
+          result = { cmd: 'make', label: 'make' }
+        }
+      } catch {}
+      _appCache.set(folderPath, result)
+      return result
+    }
+
+    // ---- ユーティリティ ----
+    let toastTimer = null
+    function showToast(msg) {
+      const t = document.getElementById('toast')
+      t.textContent = msg
+      t.classList.add('show')
+      clearTimeout(toastTimer)
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2000)
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    }
+
+    // RegExp をクエリが変わった時だけ再コンパイル
+    let _hiQ = null, _hiRe = null
+    function highlight(text, query) {
+      if (!query) return escapeHtml(text)
+      if (query !== _hiQ) {
+        _hiQ  = query
+        _hiRe = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+      }
+      return escapeHtml(text).replace(_hiRe, '<mark>$1</mark>')
+    }
+
+    function fmtTokens(n) {
+      if (n === 0) return '0'
+      if (n < 1000) return String(n)
+      if (n < 1_000_000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K'
+      return (n / 1_000_000).toFixed(2).replace(/\.?0+$/, '') + 'M'
+    }
+
+    // ---- モデル UI ----
+    function applyModelUI(model) {
+      document.querySelectorAll('.model-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.model === model)
+      })
+    }
+
+    async function initModel() {
+      const settings = await ipcRenderer.invoke('get-claude-settings')
+      currentModel = settings.model || DEFAULT_MODEL
+      applyModelUI(currentModel)
+    }
+
+    document.querySelectorAll('.model-pill').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        currentModel = btn.dataset.model
+        applyModelUI(currentModel)
+        ipcRenderer.invoke('set-model', currentModel)  // await 不要
+        showToast(`モデルを ${MODELS[currentModel] || currentModel} に変更しました`)
+      })
+    })
+
+    // ---- 使用量 UI ----
+    let usageMode  = localStorage.getItem('ccl-usage-mode') || 'tokens'
+    let usageLimit = parseInt(localStorage.getItem('ccl-usage-limit') || '1000000')
+    let cachedUsage = null
+
+    function parseLimit(raw) {
+      const s = String(raw).trim().toUpperCase()
+      if (s.endsWith('M')) return Math.round(parseFloat(s) * 1_000_000)
+      if (s.endsWith('K')) return Math.round(parseFloat(s) * 1_000)
+      return parseInt(s) || 1_000_000
+    }
+
+    function renderUsageTokens({ input, output, sessions }) {
+      const el = document.getElementById('usage-display')
+      if (input === 0 && output === 0 && sessions === 0) {
+        el.innerHTML = '<span class="usage-unit" style="color:#2e2e2e">データなし (7日間)</span>'
+        return
+      }
+      el.innerHTML =
+        `<div class="usage-nums">` +
+        `<span class="usage-val">${fmtTokens(input)}</span><span class="usage-unit">in</span>` +
+        `<span class="usage-dot">·</span>` +
+        `<span class="usage-val">${fmtTokens(output)}</span><span class="usage-unit">out</span>` +
+        `<span class="usage-dot">·</span>` +
+        `<span class="usage-val">${sessions}</span><span class="usage-unit">件</span>` +
+        `</div>`
+    }
+
+    function renderUsagePercent({ input, output }) {
+      const el = document.getElementById('usage-display')
+      const total   = input + output
+      const pct     = usageLimit > 0 ? Math.min(100, Math.round(total / usageLimit * 100)) : 0
+      const remain  = 100 - pct
+      const cls     = remain < 15 ? 'danger' : remain < 35 ? 'warn' : ''
+      el.innerHTML =
+        `<div class="usage-bar-wrap">` +
+        `<div class="usage-bar"><div class="usage-bar-fill ${cls}" style="width:${pct}%"></div></div>` +
+        `<span class="usage-pct ${cls}">残り${remain}%</span>` +
+        `<button class="usage-limit-btn" id="usage-limit-btn">/ ${fmtTokens(usageLimit)} ✎</button>` +
+        `</div>`
+      document.getElementById('usage-limit-btn').addEventListener('click', openLimitEditor)
+    }
+
+    function openLimitEditor() {
+      const btn = document.getElementById('usage-limit-btn')
+      if (!btn) return
+      const inp = document.createElement('input')
+      inp.id = 'usage-limit-input'; inp.type = 'text'
+      inp.value = fmtTokens(usageLimit); inp.title = '例: 2M, 500K, 1000000'
+      btn.replaceWith(inp); inp.focus(); inp.select()
+      const commit = () => {
+        const v = parseLimit(inp.value)
+        if (v > 0) { usageLimit = v; localStorage.setItem('ccl-usage-limit', String(v)) }
+        if (cachedUsage) renderUsagePercent(cachedUsage)
+      }
+      inp.addEventListener('blur', commit)
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Enter')  inp.blur()
+        if (e.key === 'Escape') { inp.removeEventListener('blur', commit); if (cachedUsage) renderUsagePercent(cachedUsage) }
+      })
+    }
+
+    function renderUsage(stats) {
+      cachedUsage = stats
+      if (usageMode === 'percent') renderUsagePercent(stats)
+      else                         renderUsageTokens(stats)
+      syncModeBtn()
+    }
+
+    function syncModeBtn() {
+      const btn = document.getElementById('btn-usage-mode')
+      btn.textContent = usageMode === 'tokens' ? '%' : '#'
+      btn.title = usageMode === 'tokens' ? '割合表示に切り替え' : 'トークン表示に切り替え'
+    }
+
+    document.getElementById('btn-usage-mode').addEventListener('click', () => {
+      usageMode = usageMode === 'tokens' ? 'percent' : 'tokens'
+      localStorage.setItem('ccl-usage-mode', usageMode)
+      if (cachedUsage) renderUsage(cachedUsage)
+    })
+
+    async function loadUsageStats() {
+      renderUsage(await ipcRenderer.invoke('get-usage-stats'))
+    }
+
+    document.getElementById('btn-usage-link').addEventListener('click', () => {
+      ipcRenderer.invoke('open-url', 'https://console.anthropic.com/settings/usage')
+    })
+
+    // ---- HTML テンプレート ----
+    function listItemHTML(p, query) {
+      const name = path.basename(p) || p
+      const ep   = escapeHtml(p)
+      const app  = detectApp(p)
+      const { attrs, hasOverride } = getItemDataAttrs(p)
+      const icon = getProjectIcon(p) || '📁'
+      const runBtn = app
+        ? app.type === 'electron'
+          ? `<button class="icon-btn run-app electron-app" data-path="${ep}" title="Electron アプリを起動">🖼 ${escapeHtml(app.label)}</button>`
+          : `<button class="icon-btn run-app" data-path="${ep}" data-cmd="${escapeHtml(app.cmd)}" title="${escapeHtml(app.cmd)}">▶ ${escapeHtml(app.label)}</button>`
+        : ''
+      return `<div class="project-item" draggable="true" data-path="${ep}" ${attrs}>` +
+        `<span class="drag-handle">⠿</span>` +
+        `<span class="icon">${icon}</span>` +
+        `<div class="info"><div class="name">${highlight(name, query)}</div><div class="path">${highlight(p, query)}</div></div>` +
+        `<button class="icon-btn explorer" data-path="${ep}" title="エクスプローラー">📂</button>` +
+        `<button class="icon-btn vscode"   data-path="${ep}" title="VS Code">🆚</button>` +
+        runBtn +
+        `<button class="launch-btn"        data-path="${ep}">起動</button>` +
+        `<button class="proj-gear-btn ${hasOverride ? 'has-override' : ''}" data-path="${ep}" title="個別表示設定">⚙</button>` +
+        `<button class="delete-btn"        data-path="${ep}" title="削除">✕</button>` +
+        `</div>`
+    }
+
+    function cardItemHTML(p, query) {
+      const name = path.basename(p) || p
+      const ep   = escapeHtml(p)
+      const app  = detectApp(p)
+      const { attrs, hasOverride } = getItemDataAttrs(p)
+      const icon = getProjectIcon(p) || '📁'
+      const runBtn = app
+        ? app.type === 'electron'
+          ? `<button class="icon-btn run-app electron-app" data-path="${ep}" title="Electron アプリを起動">🖼 ${escapeHtml(app.label)}</button>`
+          : `<button class="icon-btn run-app" data-path="${ep}" data-cmd="${escapeHtml(app.cmd)}" title="${escapeHtml(app.cmd)}">▶ ${escapeHtml(app.label)}</button>`
+        : ''
+      return `<div class="project-item" draggable="true" data-path="${ep}" ${attrs}>` +
+        `<div class="card-top"><span class="icon">${icon}</span>` +
+        `<div class="card-top-right">` +
+        `<button class="proj-gear-btn ${hasOverride ? 'has-override' : ''}" data-path="${ep}" title="個別表示設定">⚙</button>` +
+        `<button class="delete-btn" data-path="${ep}" title="削除">✕</button>` +
+        `</div></div>` +
+        `<div class="name">${highlight(name, query)}</div>` +
+        `<div class="path">${highlight(p, query)}</div>` +
+        `<div class="card-footer">` +
+        `<button class="icon-btn explorer" data-path="${ep}" title="エクスプローラー">📂</button>` +
+        `<button class="icon-btn vscode"   data-path="${ep}" title="VS Code">🆚</button>` +
+        runBtn +
+        `<button class="launch-btn"        data-path="${ep}">起動</button>` +
+        `</div></div>`
+    }
+
+    // ---- 描画（イベントリスナーの設定は行わない） ----
+    function renderList() {
+      const list = document.getElementById('projects-list')
+      const q    = currentQuery.toLowerCase()
+      const filtered = q
+        ? allProjects.filter(p => path.basename(p).toLowerCase().includes(q) || p.toLowerCase().includes(q))
+        : allProjects
+
+      list.className = currentView === 'card' ? 'view-card' : ''
+
+      if (allProjects.length === 0) {
+        list.innerHTML = '<div class="empty-state">プロジェクト未登録<br>「+ 追加」でフォルダを登録できます</div>'
+        return
+      }
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state">一致するプロジェクトが<br>見つかりませんでした</div>'
+        return
+      }
+      const render = currentView === 'card' ? cardItemHTML : listItemHTML
+      list.innerHTML = filtered.map(p => render(p, currentQuery)).join('')
+    }
+
+    async function renderProjects() {
+      allProjects = await ipcRenderer.invoke('get-projects')
+      renderList()
+    }
+
+    // ---- イベント委譲（一度だけ設定） ----
+    // クリック・ダブルクリック・DnD を #projects-list 一つで処理する
+    function setupListEvents() {
+      const list = document.getElementById('projects-list')
+
+      // ---- クリック委譲 ----
+      list.addEventListener('click', async e => {
+        const btn = e.target.closest('button[data-path]')
+        if (!btn) return
+        e.stopPropagation()
+        const p = btn.dataset.path
+
+        if (btn.classList.contains('proj-gear-btn')) {
+          const panel = document.getElementById('proj-settings-panel')
+          if (panel.classList.contains('open') && currentProjPath === p) {
+            panel.classList.remove('open'); currentProjPath = null
+          } else {
+            settingsPanel.classList.remove('open'); btnSettingsEl.classList.remove('active')
+            openProjSettings(p, btn.getBoundingClientRect())
+          }
+        } else if (btn.classList.contains('explorer')) {
+          ipcRenderer.invoke('open-explorer', p)
+        } else if (btn.classList.contains('vscode')) {
+          ipcRenderer.invoke('launch-vscode', p)
+          showToast('VS Code を起動しました')
+        } else if (btn.classList.contains('electron-app')) {
+          ipcRenderer.invoke('launch-electron-app', p)
+          showToast('アプリを起動しました')
+        } else if (btn.classList.contains('run-app')) {
+          ipcRenderer.invoke('launch-app', p, btn.dataset.cmd)
+          showToast(`${btn.dataset.cmd} を起動しました`)
+        } else if (btn.classList.contains('launch-btn')) {
+          ipcRenderer.invoke('launch-claude', p, currentModel)
+          showToast('Claude Code を起動しました')
+        } else if (btn.classList.contains('delete-btn')) {
+          await ipcRenderer.invoke('remove-project', p)
+          allProjects = allProjects.filter(x => x !== p)
+          renderList()
+        }
+      })
+
+      // ---- ダブルクリック委譲 ----
+      list.addEventListener('dblclick', e => {
+        if (e.target.closest('button')) return
+        const item = e.target.closest('.project-item')
+        if (!item) return
+        ipcRenderer.invoke('launch-claude', item.dataset.path, currentModel)
+        showToast('Claude Code を起動しました')
+      })
+
+      // ---- ドラッグ&ドロップ委譲 ----
+      let dragSrcEl = null
+
+      list.addEventListener('dragstart', e => {
+        if (currentQuery) return           // 検索中は並び替え無効
+        if (e.target.closest('button')) { e.preventDefault(); return }
+        const item = e.target.closest('.project-item')
+        if (!item) return
+        dragSrcEl = item
+        item.classList.add('dragging')
+        e.dataTransfer.effectAllowed = 'move'
+        e.dataTransfer.setData('text/plain', item.dataset.path)
+      })
+
+      list.addEventListener('dragend', () => {
+        if (dragSrcEl) dragSrcEl.classList.remove('dragging')
+        dragSrcEl = null
+        list.querySelectorAll('.drag-over').forEach(i => i.classList.remove('drag-over'))
+      })
+
+      list.addEventListener('dragover', e => {
+        if (!dragSrcEl) return
+        e.preventDefault()
+        const item = e.target.closest('.project-item')
+        if (!item || item === dragSrcEl) return
+        // 他のアイテムの drag-over を除去
+        const prev = list.querySelector('.drag-over')
+        if (prev && prev !== item) prev.classList.remove('drag-over')
+        item.classList.add('drag-over')
+        e.dataTransfer.dropEffect = 'move'
+      })
+
+      list.addEventListener('dragleave', e => {
+        const item = e.target.closest('.project-item')
+        if (!item || item.contains(e.relatedTarget)) return
+        item.classList.remove('drag-over')
+      })
+
+      list.addEventListener('drop', async e => {
+        e.preventDefault()
+        const dest = e.target.closest('.project-item')
+        if (!dragSrcEl || !dest || dragSrcEl === dest) return
+        const items = [...list.querySelectorAll('.project-item')]
+        const si = items.indexOf(dragSrcEl), di = items.indexOf(dest)
+        items.splice(si, 1); items.splice(di, 0, dragSrcEl)
+        items.forEach(i => list.appendChild(i))
+        allProjects = items.map(i => i.dataset.path)
+        ipcRenderer.invoke('reorder-projects', allProjects)
+        dest.classList.remove('drag-over')
+      })
+    }
+
+    // ---- プロジェクト個別設定 ----
+    const ROW_DEFS = [
+      { key: 'explorer', label: '📂 エクスプローラー' },
+      { key: 'vscode',   label: '🆚 VS Code' },
+      { key: 'run-app',  label: '▶ アプリ起動' },
+      { key: 'launch',   label: '⚡ Claude 起動' },
+      { key: 'delete',   label: '✕ 削除ボタン' },
+    ]
+
+    const PROJ_ICONS = ['📁','🌐','📱','🤖','🎮','📊','🚀','🎨','📦','🔧','🛠️','🧪','🔒','💡','📝','⚡','🔥','💎','🐍','🦀','🐹','🐳','☁️','🏗️']
+
+    function getProjectIcon(p) {
+      return localStorage.getItem('ccl-proj-icon:' + p) || null
+    }
+    function setProjectIcon(p, icon) {
+      if (!icon || icon === '📁') localStorage.removeItem('ccl-proj-icon:' + p)
+      else localStorage.setItem('ccl-proj-icon:' + p, icon)
+    }
+
+    function getProjectOverrides(p) {
+      try { return JSON.parse(localStorage.getItem('ccl-proj-ovr:' + p) || 'null') || {} }
+      catch { return {} }
+    }
+
+    function setProjectOverrides(p, overrides) {
+      if (Object.keys(overrides).length === 0) localStorage.removeItem('ccl-proj-ovr:' + p)
+      else localStorage.setItem('ccl-proj-ovr:' + p, JSON.stringify(overrides))
+    }
+
+    function getItemDataAttrs(p) {
+      const overrides = getProjectOverrides(p)
+      const entries = Object.entries(overrides)
+      return {
+        attrs: entries.map(([k, v]) => v ? `data-show-${k}` : `data-hide-${k}`).join(' '),
+        hasOverride: entries.length > 0 || !!getProjectIcon(p)
+      }
+    }
+
+    function updateProjItemDOM(projPath) {
+      const item = [...document.querySelectorAll('.project-item')].find(el => el.dataset.path === projPath)
+      if (!item) return
+      const overrides = getProjectOverrides(projPath)
+      BTN_KEYS.forEach(k => {
+        item.removeAttribute('data-show-' + k)
+        item.removeAttribute('data-hide-' + k)
+        if (k in overrides) item.setAttribute(overrides[k] ? 'data-show-' + k : 'data-hide-' + k, '')
+      })
+      const iconEl = item.querySelector('.icon')
+      if (iconEl) iconEl.textContent = getProjectIcon(projPath) || '📁'
+      const gear = item.querySelector('.proj-gear-btn')
+      if (gear) gear.classList.toggle('has-override', Object.keys(overrides).length > 0 || !!getProjectIcon(projPath))
+    }
+
+    let currentProjPath = null
+
+    function renderProjSettingsRows(p) {
+      const overrides = getProjectOverrides(p)
+      const rowsEl = document.getElementById('proj-settings-rows')
+      rowsEl.innerHTML = ''
+      ROW_DEFS.forEach(({ key, label }) => {
+        const hasOvr = key in overrides
+        const effVal = hasOvr ? overrides[key] : btnSettings[key]
+
+        const row = document.createElement('div')
+        row.className = 'toggle-row'
+
+        const lbl = document.createElement('span')
+        lbl.className = 'toggle-label'
+        lbl.textContent = label
+
+        const resetBtn = document.createElement('button')
+        resetBtn.className = 'proj-row-reset'
+        resetBtn.title = 'グローバル設定に戻す'
+        resetBtn.textContent = '↺'
+        resetBtn.style.visibility = hasOvr ? 'visible' : 'hidden'
+
+        const sw = document.createElement('label')
+        sw.className = 'toggle-switch'
+        const inp = document.createElement('input')
+        inp.type = 'checkbox'
+        inp.checked = effVal
+        const slider = document.createElement('span')
+        slider.className = 'toggle-slider'
+        sw.append(inp, slider)
+
+        const right = document.createElement('div')
+        right.style.cssText = 'display:flex;gap:4px;align-items:center'
+        right.append(resetBtn, sw)
+        row.append(lbl, right)
+        rowsEl.appendChild(row)
+
+        inp.addEventListener('change', () => {
+          const ovr = getProjectOverrides(currentProjPath)
+          ovr[key] = inp.checked
+          setProjectOverrides(currentProjPath, ovr)
+          resetBtn.style.visibility = 'visible'
+          updateProjItemDOM(currentProjPath)
+        })
+
+        resetBtn.addEventListener('click', e => {
+          e.stopPropagation()
+          const ovr = getProjectOverrides(currentProjPath)
+          delete ovr[key]
+          setProjectOverrides(currentProjPath, ovr)
+          resetBtn.style.visibility = 'hidden'
+          inp.checked = btnSettings[key]
+          updateProjItemDOM(currentProjPath)
+        })
+      })
+
+      // ---- アイコンピッカー ----
+      const section = document.createElement('div')
+      section.className = 'icon-picker-section'
+      const pickerLabel = document.createElement('div')
+      pickerLabel.className = 'icon-picker-label'
+      pickerLabel.textContent = 'アイコン'
+      const grid = document.createElement('div')
+      grid.className = 'icon-grid'
+      const currentIcon = getProjectIcon(p) || '📁'
+      PROJ_ICONS.forEach(ic => {
+        const btn = document.createElement('button')
+        btn.className = 'icon-option' + (ic === currentIcon ? ' active' : '')
+        btn.textContent = ic
+        btn.title = ic
+        btn.addEventListener('click', e => {
+          e.stopPropagation()
+          setProjectIcon(currentProjPath, ic)
+          grid.querySelectorAll('.icon-option').forEach(b => b.classList.remove('active'))
+          btn.classList.add('active')
+          updateProjItemDOM(currentProjPath)
+        })
+        grid.appendChild(btn)
+      })
+      section.append(pickerLabel, grid)
+      rowsEl.appendChild(section)
+    }
+
+    function openProjSettings(p, anchorRect) {
+      currentProjPath = p
+      const panel = document.getElementById('proj-settings-panel')
+      document.getElementById('proj-settings-name').textContent = path.basename(p) || p
+      renderProjSettingsRows(p)
+      let top = anchorRect.bottom + 4
+      if (top + 340 > window.innerHeight) top = anchorRect.top - 344
+      panel.style.top   = Math.max(4, top) + 'px'
+      panel.style.right = Math.max(4, window.innerWidth - anchorRect.right) + 'px'
+      panel.classList.add('open')
+    }
+
+    document.getElementById('proj-reset-all').addEventListener('click', e => {
+      e.stopPropagation()
+      if (!currentProjPath) return
+      setProjectOverrides(currentProjPath, {})
+      setProjectIcon(currentProjPath, null)
+      updateProjItemDOM(currentProjPath)
+      renderProjSettingsRows(currentProjPath)
+    })
+    document.getElementById('proj-settings-panel').addEventListener('click', e => e.stopPropagation())
+
+    // ---- ボタン表示設定 ----
+    const BTN_KEYS = ['explorer', 'vscode', 'run-app', 'launch', 'delete']
+
+    function loadBtnSettings() {
+      const s = {}
+      BTN_KEYS.forEach(k => {
+        const v = localStorage.getItem(`ccl-btn-${k}`)
+        s[k] = v === null ? true : v === 'true'
+      })
+      return s
+    }
+
+    let btnSettings = loadBtnSettings()
+
+    function applyBtnSettings() {
+      BTN_KEYS.forEach(k => document.body.classList.toggle(`hide-${k}`, !btnSettings[k]))
+    }
+
+    // チェックボックス初期化
+    document.querySelectorAll('#settings-panel input[data-btn]').forEach(inp => {
+      inp.checked = btnSettings[inp.dataset.btn]
+      inp.addEventListener('change', () => {
+        btnSettings[inp.dataset.btn] = inp.checked
+        localStorage.setItem(`ccl-btn-${inp.dataset.btn}`, String(inp.checked))
+        applyBtnSettings()
+      })
+    })
+
+    // パネル開閉
+    const settingsPanel = document.getElementById('settings-panel')
+    const btnSettingsEl = document.getElementById('btn-settings')
+    btnSettingsEl.addEventListener('click', e => {
+      e.stopPropagation()
+      const open = settingsPanel.classList.toggle('open')
+      btnSettingsEl.classList.toggle('active', open)
+    })
+    document.addEventListener('click', () => {
+      settingsPanel.classList.remove('open')
+      btnSettingsEl.classList.remove('active')
+      document.getElementById('proj-settings-panel').classList.remove('open')
+      currentProjPath = null
+    })
+    settingsPanel.addEventListener('click', e => e.stopPropagation())
+
+    applyBtnSettings()
+
+    // ---- 検索 ----
+    const searchInput = document.getElementById('search-input')
+    const searchClear = document.getElementById('search-clear')
+
+    searchInput.addEventListener('input', () => {
+      currentQuery = searchInput.value
+      searchClear.classList.toggle('visible', currentQuery.length > 0)
+      renderList()
+    })
+    searchClear.addEventListener('click', () => {
+      searchInput.value = ''; currentQuery = ''
+      searchClear.classList.remove('visible')
+      searchInput.focus(); renderList()
+    })
+
+    // ---- ビュー切り替え ----
+    document.getElementById('btn-view-list').addEventListener('click', () => {
+      currentView = 'list'; localStorage.setItem('ccl-view', 'list')
+      document.getElementById('btn-view-list').classList.add('active')
+      document.getElementById('btn-view-card').classList.remove('active')
+      renderList()
+    })
+    document.getElementById('btn-view-card').addEventListener('click', () => {
+      currentView = 'card'; localStorage.setItem('ccl-view', 'card')
+      document.getElementById('btn-view-card').classList.add('active')
+      document.getElementById('btn-view-list').classList.remove('active')
+      renderList()
+    })
+    if (currentView === 'card') {
+      document.getElementById('btn-view-card').classList.add('active')
+      document.getElementById('btn-view-list').classList.remove('active')
+    }
+
+    // ---- ヘッダーボタン ----
+    document.getElementById('btn-quick').addEventListener('click', async () => {
+      const ok = await ipcRenderer.invoke('select-and-launch', currentModel)
+      if (ok) showToast('Claude Code を起動しました')
+    })
+    document.getElementById('btn-add').addEventListener('click', async () => {
+      const result = await ipcRenderer.invoke('add-project')
+      if (result) { await renderProjects(); showToast('プロジェクトを追加しました') }
+    })
+    document.getElementById('btn-minimize').addEventListener('click', () => ipcRenderer.send('minimize-window'))
+    document.getElementById('btn-close').addEventListener('click',    () => ipcRenderer.send('close-window'))
+    document.getElementById('btn-maximize').addEventListener('click', () => ipcRenderer.send('toggle-maximize'))
+
+    ipcRenderer.on('window-maximized', (_, isMax) => {
+      const btn = document.getElementById('btn-maximize')
+      btn.title   = isMax ? '元のサイズに戻す' : '最大化'
+      btn.style.opacity = isMax ? '0.55' : ''
+    })
+
+    // ---- レスポンシブ（デバウンス付き） ----
+    let resizeTimer = null
+    function applyResponsive() {
+      const w = window.innerWidth, h = window.innerHeight
+      document.body.classList.toggle('compact-h', h < 560)
+      document.body.classList.toggle('narrow',    w < 420)
+      document.body.classList.toggle('wide',      w >= 600)
+    }
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(applyResponsive, 40)
+    })
+    applyResponsive()
+
+    ipcRenderer.on('projects-updated', renderProjects)
+
+    // ---- 初期化 ----
+    setupListEvents()   // イベント委譲を一度だけ設定
+    initModel()
+    syncModeBtn()
+    loadUsageStats()    // 非同期で開始（UIをブロックしない）
+    renderProjects()
+  </script>
+</body>
+</html>
