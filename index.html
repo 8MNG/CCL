@@ -6,10 +6,147 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* ===== CSS変数 (ダークテーマ = デフォルト) ===== */
+    :root {
+      --bg-0:      #0f0f0f;
+      --bg-1:      #1a1a1a;
+      --bg-2:      #141414;
+      --bg-3:      #1c1c1c;
+      --bg-4:      #1e1e1e;
+      --bg-hover:  #222222;
+      --bg-active: #252525;
+      --bg-btn:    #2a2a2a;
+      --bg-btn-h:  #333333;
+      --bd-strong: #2e2e2e;
+      --bd-mid:    #2a2a2a;
+      --bd-subtle: #212121;
+      --bd-faint:  #1e1e1e;
+      --bd-pill:   #242424;
+      --bd-btn:    #333333;
+      --tx-main:   #e0e0e0;
+      --tx-head:   #ffffff;
+      --tx-2:      #888888;
+      --tx-3:      #777777;
+      --tx-4:      #707070;
+      --tx-5:      #555555;
+      --tx-6:      #444444;
+      --tx-7:      #3a3a3a;
+      --tx-8:      #2e2e2e;
+      --tx-9:      #2a2a2a;
+      --toggle-dot: #555555;
+      --scrollbar:  #333333;
+      --ac:     #cc7832;
+      --ac-mid: #e8944a;
+      --ac-h:   #d98840;
+      --ac-hh:  #f0a055;
+      --ac-60:  rgba(204,120,50,.6);
+      --ac-50:  rgba(204,120,50,.5);
+      --ac-40:  rgba(204,120,50,.4);
+      --ac-25:  rgba(204,120,50,.25);
+      --ac-20:  rgba(204,120,50,.2);
+      --ac-10:  rgba(204,120,50,.1);
+      --ac-08:  rgba(204,120,50,.08);
+    }
+
+    /* ===== ライトテーマ ===== */
+    [data-theme="light"] {
+      --bg-0:      #f0f0f0;
+      --bg-1:      #ffffff;
+      --bg-2:      #f5f5f5;
+      --bg-3:      #ffffff;
+      --bg-4:      #e8e8e8;
+      --bg-hover:  #eeeeee;
+      --bg-active: #e4e4e4;
+      --bg-btn:    #e0e0e0;
+      --bg-btn-h:  #d4d4d4;
+      --bd-strong: #d0d0d0;
+      --bd-mid:    #d8d8d8;
+      --bd-subtle: #e0e0e0;
+      --bd-faint:  #eaeaea;
+      --bd-pill:   #d4d4d4;
+      --bd-btn:    #cccccc;
+      --tx-main:   #1a1a1a;
+      --tx-head:   #000000;
+      --tx-2:      #555555;
+      --tx-3:      #666666;
+      --tx-4:      #666666;
+      --tx-5:      #777777;
+      --tx-6:      #888888;
+      --tx-7:      #999999;
+      --tx-8:      #aaaaaa;
+      --tx-9:      #bbbbbb;
+      --toggle-dot: #888888;
+      --scrollbar:  #cccccc;
+    }
+
+    /* ===== 目に優しいテーマ (warm) ===== */
+    [data-theme="warm"] {
+      --bg-0:      #1a1208;
+      --bg-1:      #221808;
+      --bg-2:      #1c1408;
+      --bg-3:      #261a0c;
+      --bg-4:      #281c0c;
+      --bg-hover:  #2c2010;
+      --bg-active: #302414;
+      --bg-btn:    #382a14;
+      --bg-btn-h:  #42300e;
+      --bd-strong: #40300e;
+      --bd-mid:    #382808;
+      --bd-subtle: #2e2006;
+      --bd-faint:  #2c1e06;
+      --bd-pill:   #32260a;
+      --bd-btn:    #443210;
+      --tx-main:   #ead4a0;
+      --tx-head:   #f8e8c4;
+      --tx-2:      #c09060;
+      --tx-3:      #a07840;
+      --tx-4:      #8c6830;
+      --tx-5:      #745228;
+      --tx-6:      #5c4020;
+      --tx-7:      #4a3218;
+      --tx-8:      #3a2a10;
+      --tx-9:      #30220c;
+      --toggle-dot: #7a5020;
+      --scrollbar:  #442e0e;
+    }
+
+    /* ===== システムテーマ (OSがライトの場合) ===== */
+    @media (prefers-color-scheme: light) {
+      [data-theme="system"] {
+        --bg-0:      #f0f0f0;
+        --bg-1:      #ffffff;
+        --bg-2:      #f5f5f5;
+        --bg-3:      #ffffff;
+        --bg-4:      #e8e8e8;
+        --bg-hover:  #eeeeee;
+        --bg-active: #e4e4e4;
+        --bg-btn:    #e0e0e0;
+        --bg-btn-h:  #d4d4d4;
+        --bd-strong: #d0d0d0;
+        --bd-mid:    #d8d8d8;
+        --bd-subtle: #e0e0e0;
+        --bd-faint:  #eaeaea;
+        --bd-pill:   #d4d4d4;
+        --bd-btn:    #cccccc;
+        --tx-main:   #1a1a1a;
+        --tx-head:   #000000;
+        --tx-2:      #555555;
+        --tx-3:      #666666;
+        --tx-4:      #666666;
+        --tx-5:      #777777;
+        --tx-6:      #888888;
+        --tx-7:      #999999;
+        --tx-8:      #aaaaaa;
+        --tx-9:      #bbbbbb;
+        --toggle-dot: #888888;
+        --scrollbar:  #cccccc;
+      }
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0f0f0f;
-      color: #e0e0e0;
+      background: var(--bg-0);
+      color: var(--tx-main);
       height: 100vh;
       display: flex;
       flex-direction: column;
@@ -19,17 +156,17 @@
     /* タイトルバー */
     #titlebar {
       -webkit-app-region: drag;
-      background: #1a1a1a;
+      background: var(--bg-1);
       height: 36px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 12px;
-      border-bottom: 1px solid #2a2a2a;
+      border-bottom: 1px solid var(--bd-mid);
       flex-shrink: 0;
     }
 
-    #titlebar .title { font-size: 13px; font-weight: 600; color: #cc7832; letter-spacing: 0.5px; }
+    #titlebar .title { font-size: 13px; font-weight: 600; color: var(--ac); letter-spacing: 0.5px; }
 
     #titlebar .controls {
       -webkit-app-region: no-drag;
@@ -40,7 +177,6 @@
     #titlebar .controls button {
       width: 12px; height: 12px;
       border-radius: 50%; border: none; cursor: pointer;
-      /* transition: all は全プロパティ監視になるので opacity のみに絞る */
       transition: opacity 0.2s;
     }
 
@@ -57,41 +193,40 @@
 
     #hero .logo {
       width: 44px; height: 44px;
-      background: linear-gradient(135deg, #cc7832, #e8944a);
+      background: linear-gradient(135deg, var(--ac), var(--ac-mid));
       border-radius: 13px;
       display: flex; align-items: center; justify-content: center;
       font-size: 22px;
-      box-shadow: 0 4px 20px rgba(204, 120, 50, 0.4);
+      box-shadow: 0 4px 20px var(--ac-40);
     }
 
-    #hero h1 { font-size: 16px; font-weight: 700; color: #fff; }
-    #hero p  { font-size: 11px; color: #555; }
+    #hero h1 { font-size: 16px; font-weight: 700; color: var(--tx-head); }
+    #hero p  { font-size: 11px; color: var(--tx-5); }
 
     /* クイック起動 */
     #quick-launch { margin: 0 24px 12px; }
 
     #btn-quick {
       width: 100%; padding: 10px;
-      background: linear-gradient(135deg, #cc7832, #e8944a);
+      background: linear-gradient(135deg, var(--ac), var(--ac-mid));
       color: #fff; border: none; border-radius: 10px;
       font-size: 13px; font-weight: 600; cursor: pointer;
-      /* transform と box-shadow と background のみ */
       transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
       letter-spacing: 0.3px;
     }
 
     #btn-quick:hover {
-      background: linear-gradient(135deg, #d98840, #f0a055);
+      background: linear-gradient(135deg, var(--ac-h), var(--ac-hh));
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(204, 120, 50, 0.4);
+      box-shadow: 0 4px 16px var(--ac-40);
     }
     #btn-quick:active { transform: translateY(0); }
 
     /* Stats bar */
     #stats-bar {
       margin: 0 24px 12px;
-      background: #141414;
-      border: 1px solid #212121;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-subtle);
       border-radius: 10px;
       padding: 10px 14px;
       display: flex; flex-direction: column; gap: 9px;
@@ -101,65 +236,64 @@
 
     .bar-label {
       font-size: 10px; font-weight: 700; letter-spacing: 0.9px;
-      color: #3a3a3a; text-transform: uppercase; flex-shrink: 0; width: 48px;
+      color: var(--tx-7); text-transform: uppercase; flex-shrink: 0; width: 48px;
     }
 
     /* モデル pills */
     .model-pills { display: flex; gap: 4px; flex: 1; }
 
     .model-pill {
-      flex: 1; background: transparent; color: #484848;
-      border: 1px solid #242424; border-radius: 6px;
+      flex: 1; background: transparent; color: var(--tx-6);
+      border: 1px solid var(--bd-pill); border-radius: 6px;
       padding: 4px 2px; font-size: 11px; cursor: pointer;
-      /* color と border-color のみ */
       transition: color 0.15s, border-color 0.15s, background-color 0.15s;
       text-align: center; white-space: nowrap;
     }
-    .model-pill:hover  { color: #777; border-color: #3a3a3a; }
-    .model-pill.active { background: rgba(204,120,50,0.1); color: #cc7832; border-color: rgba(204,120,50,0.5); font-weight: 600; }
+    .model-pill:hover  { color: var(--tx-3); border-color: var(--tx-7); }
+    .model-pill.active { background: var(--ac-10); color: var(--ac); border-color: var(--ac-50); font-weight: 600; }
 
     /* 使用量 */
     .usage-nums {
       flex: 1; display: flex; align-items: center; gap: 5px;
-      font-size: 11px; color: #3a3a3a; flex-wrap: nowrap; overflow: hidden;
+      font-size: 11px; color: var(--tx-7); flex-wrap: nowrap; overflow: hidden;
     }
-    .usage-val  { color: #707070; font-weight: 600; }
-    .usage-unit { color: #3a3a3a; }
-    .usage-dot  { color: #2a2a2a; }
+    .usage-val  { color: var(--tx-4); font-weight: 600; }
+    .usage-unit { color: var(--tx-7); }
+    .usage-dot  { color: var(--tx-9); }
 
     /* 使用量バー */
     .usage-bar-wrap { flex: 1; display: flex; align-items: center; gap: 7px; overflow: hidden; min-width: 0; }
-    .usage-bar { flex: 1; height: 5px; background: #1e1e1e; border-radius: 3px; overflow: hidden; border: 1px solid #252525; min-width: 30px; }
-    .usage-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #cc7832, #e8944a); transition: width 0.5s ease; }
-    .usage-bar-fill.warn   { background: linear-gradient(90deg, #e8944a, #f0c040); }
+    .usage-bar { flex: 1; height: 5px; background: var(--bg-4); border-radius: 3px; overflow: hidden; border: 1px solid var(--bg-active); min-width: 30px; }
+    .usage-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--ac), var(--ac-mid)); transition: width 0.5s ease; }
+    .usage-bar-fill.warn   { background: linear-gradient(90deg, var(--ac-mid), #f0c040); }
     .usage-bar-fill.danger { background: #e74c3c; }
-    .usage-pct { font-size: 11px; font-weight: 700; flex-shrink: 0; color: #707070; white-space: nowrap; }
-    .usage-pct.warn   { color: #e8944a; }
+    .usage-pct { font-size: 11px; font-weight: 700; flex-shrink: 0; color: var(--tx-4); white-space: nowrap; }
+    .usage-pct.warn   { color: var(--ac-mid); }
     .usage-pct.danger { color: #e74c3c; }
 
     .usage-limit-btn {
-      font-size: 10px; color: #2e2e2e; background: transparent;
+      font-size: 10px; color: var(--tx-8); background: transparent;
       border: none; cursor: pointer; white-space: nowrap;
       transition: color 0.2s; flex-shrink: 0; padding: 0;
     }
-    .usage-limit-btn:hover { color: #666; }
+    .usage-limit-btn:hover { color: var(--tx-3); }
 
     #usage-limit-input {
-      background: #0f0f0f; border: 1px solid rgba(204,120,50,0.6);
-      border-radius: 4px; color: #cc7832; font-size: 10px;
+      background: var(--bg-0); border: 1px solid var(--ac-60);
+      border-radius: 4px; color: var(--ac); font-size: 10px;
       padding: 2px 6px; width: 62px; outline: none; user-select: text;
     }
 
     #btn-usage-mode {
-      background: transparent; color: #333; border: 1px solid #1e1e1e;
+      background: transparent; color: var(--tx-8); border: 1px solid var(--bd-faint);
       border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 700;
       cursor: pointer; transition: color 0.2s, border-color 0.2s;
       flex-shrink: 0; letter-spacing: 0.3px;
     }
-    #btn-usage-mode:hover { color: #777; border-color: #3a3a3a; }
+    #btn-usage-mode:hover { color: var(--tx-3); border-color: var(--tx-7); }
 
     #btn-usage-link {
-      background: transparent; color: #3a3a3a; border: 1px solid #222;
+      background: transparent; color: var(--tx-7); border: 1px solid var(--bg-hover);
       border-radius: 5px; padding: 2px 8px; font-size: 10px; cursor: pointer;
       transition: color 0.2s, border-color 0.2s; flex-shrink: 0; white-space: nowrap;
     }
@@ -169,37 +303,37 @@
     #projects-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0 24px 20px; }
 
     #projects-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; position: relative; }
-    #projects-header .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #555; }
+    #projects-header .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--tx-5); }
 
     .header-right { display: flex; align-items: center; gap: 6px; }
     .view-toggle  { display: flex; gap: 2px; }
 
     .view-btn {
-      background: transparent; color: #444; border: 1px solid #2a2a2a;
+      background: transparent; color: var(--tx-6); border: 1px solid var(--bd-mid);
       border-radius: 5px; padding: 3px 8px; font-size: 14px; cursor: pointer;
       transition: color 0.15s, border-color 0.15s, background-color 0.15s; line-height: 1;
     }
-    .view-btn:hover  { color: #888; border-color: #444; }
-    .view-btn.active { color: #cc7832; border-color: #cc7832; background: rgba(204,120,50,0.08); }
+    .view-btn:hover  { color: var(--tx-2); border-color: var(--tx-6); }
+    .view-btn.active { color: var(--ac); border-color: var(--ac); background: var(--ac-08); }
 
     #btn-add {
-      background: #2a2a2a; color: #cc7832; border: 1px solid #333;
+      background: var(--bg-btn); color: var(--ac); border: 1px solid var(--bd-btn);
       border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
       transition: background-color 0.2s, border-color 0.2s;
     }
-    #btn-add:hover { background: #333; border-color: #cc7832; }
+    #btn-add:hover { background: var(--bg-btn-h); border-color: var(--ac); }
 
     #btn-settings {
-      background: transparent; color: #444; border: 1px solid #2a2a2a;
+      background: transparent; color: var(--tx-6); border: 1px solid var(--bd-mid);
       border-radius: 5px; padding: 3px 7px; font-size: 13px; cursor: pointer;
       transition: color 0.15s, border-color 0.15s; line-height: 1;
     }
-    #btn-settings:hover  { color: #888; border-color: #444; }
-    #btn-settings.active { color: #cc7832; border-color: #cc7832; background: rgba(204,120,50,0.08); }
+    #btn-settings:hover  { color: var(--tx-2); border-color: var(--tx-6); }
+    #btn-settings.active { color: var(--ac); border-color: var(--ac); background: var(--ac-08); }
 
     #settings-panel {
       position: absolute; top: calc(100% + 4px); right: 0; z-index: 200;
-      background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 10px;
+      background: var(--bg-3); border: 1px solid var(--bd-strong); border-radius: 10px;
       padding: 10px 14px; min-width: 185px;
       display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
     }
@@ -207,27 +341,27 @@
 
     .settings-title {
       font-size: 10px; font-weight: 700; letter-spacing: 1px;
-      text-transform: uppercase; color: #444; margin-bottom: 8px;
+      text-transform: uppercase; color: var(--tx-6); margin-bottom: 8px;
     }
     .toggle-row {
       display: flex; align-items: center; justify-content: space-between;
       gap: 12px; padding: 5px 0;
     }
-    .toggle-row + .toggle-row { border-top: 1px solid #1e1e1e; }
-    .toggle-label { font-size: 12px; color: #888; cursor: pointer; }
+    .toggle-row + .toggle-row { border-top: 1px solid var(--bd-faint); }
+    .toggle-label { font-size: 12px; color: var(--tx-2); cursor: pointer; }
     .toggle-switch { position: relative; width: 30px; height: 17px; flex-shrink: 0; }
     .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
     .toggle-slider {
-      position: absolute; inset: 0; background: #2a2a2a;
+      position: absolute; inset: 0; background: var(--bg-btn);
       border-radius: 9px; cursor: pointer; transition: background 0.2s;
     }
     .toggle-slider::before {
       content: ''; position: absolute; width: 11px; height: 11px;
-      left: 3px; top: 3px; background: #555; border-radius: 50%;
+      left: 3px; top: 3px; background: var(--toggle-dot); border-radius: 50%;
       transition: transform 0.2s, background 0.2s;
     }
-    .toggle-switch input:checked + .toggle-slider { background: rgba(204,120,50,0.25); }
-    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(13px); background: #cc7832; }
+    .toggle-switch input:checked + .toggle-slider { background: var(--ac-25); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(13px); background: var(--ac); }
 
     /* ---- ボタン非表示設定（グローバル） ---- */
     body.hide-explorer .project-item .icon-btn.explorer { display: none; }
@@ -250,22 +384,22 @@
 
     /* ---- プロジェクト個別設定ボタン ---- */
     .proj-gear-btn {
-      background: transparent; color: #1e1e1e; border: none;
+      background: transparent; color: var(--bg-4); border: none;
       cursor: pointer; font-size: 12px; padding: 2px 4px;
       transition: color 0.2s; flex-shrink: 0; line-height: 1;
     }
-    .project-item:hover .proj-gear-btn { color: #444; }
-    .proj-gear-btn:hover { color: #cc7832 !important; }
-    .proj-gear-btn.has-override { color: #555 !important; }
-    .project-item:hover .proj-gear-btn.has-override { color: #cc7832 !important; }
+    .project-item:hover .proj-gear-btn { color: var(--tx-6); }
+    .proj-gear-btn:hover { color: var(--ac) !important; }
+    .proj-gear-btn.has-override { color: var(--tx-5) !important; }
+    .project-item:hover .proj-gear-btn.has-override { color: var(--ac) !important; }
 
     .card-top-right { display: flex; align-items: center; gap: 2px; }
-    .view-card .proj-gear-btn { color: #333; }
+    .view-card .proj-gear-btn { color: var(--bd-btn); }
 
     /* ---- 個別設定パネル ---- */
     #proj-settings-panel {
       position: fixed; z-index: 300;
-      background: #1c1c1c; border: 1px solid #2e2e2e; border-radius: 10px;
+      background: var(--bg-3); border: 1px solid var(--bd-strong); border-radius: 10px;
       padding: 10px 14px; min-width: 200px;
       display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
     }
@@ -274,49 +408,49 @@
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 8px; gap: 8px;
     }
-    #proj-settings-name { font-size: 11px; font-weight: 600; color: #cc7832; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
+    #proj-settings-name { font-size: 11px; font-weight: 600; color: var(--ac); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
     .btn-proj-reset-all {
-      font-size: 10px; color: #3a3a3a; background: transparent;
-      border: 1px solid #2a2a2a; border-radius: 4px; padding: 2px 6px;
+      font-size: 10px; color: var(--tx-7); background: transparent;
+      border: 1px solid var(--bd-mid); border-radius: 4px; padding: 2px 6px;
       cursor: pointer; transition: color 0.2s, border-color 0.2s; white-space: nowrap; flex-shrink: 0;
     }
-    .btn-proj-reset-all:hover { color: #e74c3c; border-color: #444; }
+    .btn-proj-reset-all:hover { color: #e74c3c; border-color: var(--tx-6); }
     .proj-row-reset {
-      font-size: 12px; color: #cc7832; background: transparent;
+      font-size: 12px; color: var(--ac); background: transparent;
       border: none; cursor: pointer; padding: 0 2px; transition: opacity 0.2s; line-height: 1;
     }
     .proj-row-reset:hover { opacity: 0.7; }
 
-    .icon-picker-section { margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e1e1e; }
-    .icon-picker-label { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #444; margin-bottom: 6px; }
+    .icon-picker-section { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--bg-4); }
+    .icon-picker-label { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--tx-6); margin-bottom: 6px; }
     .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; }
     .icon-option {
-      background: transparent; border: 1px solid #222; border-radius: 5px;
+      background: transparent; border: 1px solid var(--bg-hover); border-radius: 5px;
       padding: 4px 2px; font-size: 14px; cursor: pointer; line-height: 1;
       transition: border-color 0.15s, background-color 0.15s; text-align: center;
     }
-    .icon-option:hover  { border-color: #444; background: #222; }
-    .icon-option.active { border-color: rgba(204,120,50,0.6); background: rgba(204,120,50,0.1); }
+    .icon-option:hover  { border-color: var(--tx-6); background: var(--bg-hover); }
+    .icon-option.active { border-color: var(--ac-60); background: var(--ac-10); }
 
     /* 検索 */
     #search-bar { position: relative; margin-bottom: 9px; }
 
-    #search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #444; pointer-events: none; }
+    #search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--tx-6); pointer-events: none; }
 
     #search-input {
-      width: 100%; background: #1a1a1a; border: 1px solid #2a2a2a;
-      border-radius: 8px; padding: 7px 30px 7px 30px; color: #e0e0e0;
+      width: 100%; background: var(--bg-1); border: 1px solid var(--bd-mid);
+      border-radius: 8px; padding: 7px 30px 7px 30px; color: var(--tx-main);
       font-size: 12px; outline: none; transition: border-color 0.2s; user-select: text;
     }
-    #search-input:focus       { border-color: #cc7832; }
-    #search-input::placeholder { color: #3a3a3a; }
+    #search-input:focus        { border-color: var(--ac); }
+    #search-input::placeholder { color: var(--tx-7); }
 
     #search-clear {
       position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-      background: transparent; border: none; color: #444; font-size: 13px;
+      background: transparent; border: none; color: var(--tx-6); font-size: 13px;
       cursor: pointer; padding: 2px 4px; display: none; transition: color 0.2s;
     }
-    #search-clear:hover    { color: #888; }
+    #search-clear:hover    { color: var(--tx-2); }
     #search-clear.visible  { display: block; }
 
     /* プロジェクトリスト */
@@ -326,7 +460,7 @@
     }
     #projects-list::-webkit-scrollbar       { width: 4px; }
     #projects-list::-webkit-scrollbar-track { background: transparent; }
-    #projects-list::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    #projects-list::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
 
     /* カードビュー */
     #projects-list.view-card {
@@ -338,48 +472,47 @@
     /* リストアイテム共通 */
     .project-item {
       display: flex; align-items: center;
-      background: #1a1a1a; border: 1px solid #2a2a2a;
+      background: var(--bg-1); border: 1px solid var(--bd-mid);
       border-radius: 8px; padding: 10px 12px; gap: 10px;
-      /* background と border-color のみ（all は回避） */
       transition: background-color 0.15s, border-color 0.15s;
     }
-    .project-item:hover { background: #222; border-color: #3a3a3a; }
+    .project-item:hover { background: var(--bg-hover); border-color: var(--tx-7); }
 
     .drag-handle {
-      color: #2a2a2a; font-size: 15px; cursor: grab; flex-shrink: 0;
+      color: var(--tx-9); font-size: 15px; cursor: grab; flex-shrink: 0;
       line-height: 1; transition: color 0.2s; padding: 0 2px;
     }
-    .project-item:hover .drag-handle { color: #555; }
+    .project-item:hover .drag-handle { color: var(--tx-5); }
     .drag-handle:active { cursor: grabbing; }
 
-    .project-item.dragging  { opacity: 0.35; border-color: #cc7832; }
-    .project-item.drag-over { border-color: #cc7832; background: #252525; box-shadow: 0 0 0 2px rgba(204,120,50,0.2); }
+    .project-item.dragging  { opacity: 0.35; border-color: var(--ac); }
+    .project-item.drag-over { border-color: var(--ac); background: var(--bg-active); box-shadow: 0 0 0 2px var(--ac-20); }
 
     .project-item .icon { font-size: 18px; flex-shrink: 0; }
     .project-item .info { flex: 1; overflow: hidden; }
-    .project-item .name { font-size: 13px; font-weight: 600; color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .project-item .path { font-size: 11px; color: #555; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .project-item .name { font-size: 13px; font-weight: 600; color: var(--tx-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .project-item .path { font-size: 11px; color: var(--tx-5); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .project-item .launch-btn {
-      background: #cc7832; color: #fff; border: none;
-      border-radius: 5px; padding: 4px 10px;
-      font-size: 11px; font-weight: 600; cursor: pointer;
-      transition: background-color 0.2s; flex-shrink: 0;
+      background: transparent; border: 1px solid var(--bd-btn);
+      border-radius: 5px; padding: 4px 8px;
+      font-size: 15px; cursor: pointer;
+      transition: border-color 0.2s; flex-shrink: 0;
     }
-    .project-item .launch-btn:hover { background: #d98840; }
+    .project-item .launch-btn:hover { border-color: var(--ac); }
 
     .project-item .icon-btn {
-      background: transparent; color: #555; border: 1px solid #333;
+      background: transparent; color: var(--tx-5); border: 1px solid var(--bd-btn);
       border-radius: 5px; padding: 4px 8px; font-size: 11px; cursor: pointer;
       transition: color 0.2s, border-color 0.2s; flex-shrink: 0;
     }
-    .project-item .icon-btn:hover          { color: #e0e0e0; border-color: #666; }
+    .project-item .icon-btn:hover          { color: var(--tx-main); border-color: var(--tx-3); }
     .project-item .icon-btn.explorer:hover { color: #7db8e8; border-color: #7db8e8; }
     .project-item .icon-btn.vscode:hover   { color: #4ec9b0; border-color: #4ec9b0; }
     .project-item .icon-btn.run-app:hover  { color: #2ecc71; border-color: #2ecc71; }
 
     .project-item .delete-btn {
-      background: transparent; color: #444; border: none;
+      background: transparent; color: var(--tx-6); border: none;
       cursor: pointer; font-size: 14px; padding: 2px 4px;
       transition: color 0.2s; flex-shrink: 0;
     }
@@ -387,23 +520,23 @@
 
     /* カードアイテム */
     .view-card .project-item { flex-direction: column; align-items: stretch; padding: 12px 12px 10px; gap: 0; cursor: pointer; }
-    .view-card .project-item:hover { border-color: #cc7832; }
+    .view-card .project-item:hover { border-color: var(--ac); }
     .view-card .drag-handle  { display: none; }
 
     .view-card .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 7px; }
     .view-card .project-item .icon       { font-size: 24px; }
     .view-card .project-item .name       { font-size: 12px; margin-bottom: 3px; }
-    .view-card .project-item .path       { font-size: 10px; color: #444; margin-bottom: 10px; }
+    .view-card .project-item .path       { font-size: 10px; color: var(--tx-6); margin-bottom: 10px; }
     .view-card .project-item .delete-btn { font-size: 12px; padding: 1px 3px; }
 
     .view-card .card-footer               { display: flex; gap: 4px; align-items: center; }
     .view-card .card-footer .icon-btn     { padding: 4px 7px; font-size: 11px; }
-    .view-card .card-footer .launch-btn   { flex: 1; text-align: center; padding: 4px 6px; }
+    .view-card .card-footer .launch-btn   { padding: 4px 8px; font-size: 15px; }
 
     /* 検索ハイライト */
-    mark { background: rgba(204,120,50,0.25); color: #e8944a; border-radius: 2px; padding: 0 1px; }
+    mark { background: var(--ac-25); color: var(--ac-mid); border-radius: 2px; padding: 0 1px; }
 
-    .empty-state { text-align: center; color: #444; font-size: 13px; padding: 28px 0; line-height: 2; }
+    .empty-state { text-align: center; color: var(--tx-6); font-size: 13px; padding: 28px 0; line-height: 2; }
     .view-card .empty-state { grid-column: 1 / -1; }
 
     /* ---- レスポンシブ ---- */
@@ -428,12 +561,87 @@
 
     .toast {
       position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: #cc7832; color: #fff;
+      background: var(--ac); color: #fff;
       padding: 8px 20px; border-radius: 20px;
       font-size: 12px; font-weight: 600;
       opacity: 0; transition: opacity 0.3s; pointer-events: none;
     }
     .toast.show { opacity: 1; }
+
+    /* ---- 確認ダイアログ ---- */
+    .confirm-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; opacity: 0; transition: opacity 0.15s; pointer-events: none;
+    }
+    .confirm-overlay.show { opacity: 1; pointer-events: auto; }
+    .confirm-box {
+      background: var(--bg-1); border: 1px solid var(--bd-strong);
+      border-radius: 12px; padding: 20px 24px 18px; min-width: 300px; max-width: 340px;
+      text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .confirm-title {
+      font-size: 13px; font-weight: 700; color: var(--tx-head); margin-bottom: 6px;
+    }
+    .confirm-q {
+      font-size: 11px; color: var(--tx-3); margin-bottom: 12px; line-height: 1.5;
+    }
+    .confirm-flag {
+      display: inline-block; margin-top: 3px;
+      font-family: monospace; font-size: 10px;
+      color: #e07b39; background: rgba(204,120,50,0.1);
+      border: 1px solid rgba(204,120,50,0.25); border-radius: 4px;
+      padding: 1px 6px;
+    }
+    .confirm-security {
+      background: var(--bg-2); border: 1px solid var(--bd-subtle);
+      border-radius: 8px; padding: 9px 12px; margin-bottom: 14px; text-align: left;
+    }
+    .confirm-sec-title {
+      font-size: 9px; font-weight: 700; color: var(--tx-5);
+      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px;
+    }
+    .confirm-security-item {
+      font-size: 11px; line-height: 1.7; color: var(--tx-3);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .confirm-security-item.ok   { color: #5cb87a; }
+    .confirm-security-item.warn { color: #e07b39; }
+    .confirm-btns { display: flex; gap: 8px; justify-content: center; }
+    .confirm-btn {
+      flex: 1; padding: 8px 0; border-radius: 7px; border: 1px solid var(--bd-mid);
+      font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.15s;
+    }
+    .confirm-btn-yes  { background: var(--bg-btn); color: var(--tx-2); }
+    .confirm-btn-yes:hover  { background: var(--bg-btn-h); }
+    .confirm-btn-skip { background: var(--ac); color: #fff; border-color: var(--ac); }
+    .confirm-btn-skip:hover { background: var(--ac-h); }
+
+    /* ---- テーマ切り替え ---- */
+    #theme-switcher { position: relative; -webkit-app-region: no-drag; }
+    #btn-theme {
+      background: transparent; color: var(--tx-6); border: 1px solid var(--bd-mid);
+      border-radius: 5px; padding: 3px 7px; font-size: 13px; cursor: pointer;
+      transition: color 0.15s, border-color 0.15s; line-height: 1;
+    }
+    #btn-theme:hover  { color: var(--tx-2); border-color: var(--tx-6); }
+    #btn-theme.active { color: var(--ac); border-color: var(--ac); background: var(--ac-08); }
+    #theme-panel {
+      position: absolute; top: calc(100% + 4px); right: 0; z-index: 201;
+      background: var(--bg-3); border: 1px solid var(--bd-strong);
+      border-radius: 8px; padding: 4px; display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      flex-direction: column; gap: 2px; min-width: 110px;
+    }
+    #theme-panel.open { display: flex; }
+    .theme-opt {
+      background: transparent; border: none; border-radius: 5px;
+      color: var(--tx-2); font-size: 12px; padding: 5px 10px;
+      cursor: pointer; text-align: left;
+      transition: background-color 0.15s, color 0.15s;
+    }
+    .theme-opt:hover  { background: var(--bg-hover); color: var(--tx-main); }
+    .theme-opt.active { color: var(--ac); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -482,6 +690,15 @@
             <button class="view-btn active" id="btn-view-list" title="リストビュー">≡</button>
             <button class="view-btn"        id="btn-view-card" title="カードビュー">⊞</button>
           </div>
+          <div id="theme-switcher">
+            <button id="btn-theme" title="テーマ切り替え">◑</button>
+            <div id="theme-panel">
+              <button class="theme-opt" data-theme="system">🖥 システム</button>
+              <button class="theme-opt" data-theme="dark">🌙 ダーク</button>
+              <button class="theme-opt" data-theme="light">☀ ライト</button>
+              <button class="theme-opt" data-theme="warm">🌿 目に優しい</button>
+            </div>
+          </div>
           <button id="btn-settings" title="表示設定">⚙</button>
           <button id="btn-add">+ 追加</button>
         </div>
@@ -521,6 +738,25 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+      <div class="confirm-title">起動オプション</div>
+      <div class="confirm-q">
+        許可チェックをスキップしますか？<br>
+        <span class="confirm-flag">--dangerously-skip-permissions</span>
+      </div>
+      <div class="confirm-security" id="confirm-security">
+        <div class="confirm-sec-title">セキュリティ状態</div>
+        <div class="confirm-security-item" id="sec-deny">確認中...</div>
+        <div class="confirm-security-item" id="sec-hook"></div>
+      </div>
+      <div class="confirm-btns">
+        <button class="confirm-btn confirm-btn-yes"  id="confirm-yes">通常起動</button>
+        <button class="confirm-btn confirm-btn-skip" id="confirm-skip">スキップ起動</button>
+      </div>
+    </div>
+  </div>
 
   <div id="proj-settings-panel">
     <div class="proj-settings-header">
@@ -592,6 +828,44 @@
     }
 
     // ---- ユーティリティ ----
+    // ---- 起動前確認ダイアログ ----
+    async function askPermissions() {
+      // セキュリティ状態を非同期で取得・表示
+      const denyEl = document.getElementById('sec-deny')
+      const hookEl = document.getElementById('sec-hook')
+      denyEl.textContent = '確認中...'
+      denyEl.className   = 'confirm-security-item'
+      hookEl.textContent = ''
+      hookEl.className   = 'confirm-security-item'
+      try {
+        const s = await ipcRenderer.invoke('get-security-status')
+        if (s.denyCount > 0) {
+          denyEl.textContent = `✓ deny パターン ${s.denyCount} 件`
+          denyEl.className   = 'confirm-security-item ok'
+        } else {
+          denyEl.textContent = '✗ deny パターン未設定'
+          denyEl.className   = 'confirm-security-item warn'
+        }
+        hookEl.textContent = s.hasHook ? '✓ PreToolUse フック設定済み' : '✗ PreToolUse フック未設定'
+        hookEl.className   = `confirm-security-item ${s.hasHook ? 'ok' : 'warn'}`
+      } catch {
+        denyEl.textContent = '状態を確認できませんでした'
+      }
+
+      return new Promise(resolve => {
+        const overlay = document.getElementById('confirm-overlay')
+        overlay.classList.add('show')
+        const cleanup = (skip) => {
+          overlay.classList.remove('show')
+          document.getElementById('confirm-yes').onclick  = null
+          document.getElementById('confirm-skip').onclick = null
+          resolve(skip)
+        }
+        document.getElementById('confirm-yes').onclick  = () => cleanup(false)
+        document.getElementById('confirm-skip').onclick = () => cleanup(true)
+      })
+    }
+
     let toastTimer = null
     function showToast(msg) {
       const t = document.getElementById('toast')
@@ -743,8 +1017,8 @@
       const icon = getProjectIcon(p) || '📁'
       const runBtn = app
         ? app.type === 'electron'
-          ? `<button class="icon-btn run-app electron-app" data-path="${ep}" title="Electron アプリを起動">🖼 ${escapeHtml(app.label)}</button>`
-          : `<button class="icon-btn run-app" data-path="${ep}" data-cmd="${escapeHtml(app.cmd)}" title="${escapeHtml(app.cmd)}">▶ ${escapeHtml(app.label)}</button>`
+          ? `<button class="icon-btn run-app electron-app" data-path="${ep}" title="アプリを起動">🚀</button>`
+          : `<button class="icon-btn run-app" data-path="${ep}" data-cmd="${escapeHtml(app.cmd)}" title="アプリを起動">🚀</button>`
         : ''
       return `<div class="project-item" draggable="true" data-path="${ep}" ${attrs}>` +
         `<span class="drag-handle">⠿</span>` +
@@ -753,7 +1027,7 @@
         `<button class="icon-btn explorer" data-path="${ep}" title="エクスプローラー">📂</button>` +
         `<button class="icon-btn vscode"   data-path="${ep}" title="VS Code">🆚</button>` +
         runBtn +
-        `<button class="launch-btn"        data-path="${ep}">起動</button>` +
+        `<button class="launch-btn"        data-path="${ep}" title="Claude Code を起動">🥭</button>` +
         `<button class="proj-gear-btn ${hasOverride ? 'has-override' : ''}" data-path="${ep}" title="個別表示設定">⚙</button>` +
         `<button class="delete-btn"        data-path="${ep}" title="削除">✕</button>` +
         `</div>`
@@ -767,8 +1041,8 @@
       const icon = getProjectIcon(p) || '📁'
       const runBtn = app
         ? app.type === 'electron'
-          ? `<button class="icon-btn run-app electron-app" data-path="${ep}" title="Electron アプリを起動">🖼 ${escapeHtml(app.label)}</button>`
-          : `<button class="icon-btn run-app" data-path="${ep}" data-cmd="${escapeHtml(app.cmd)}" title="${escapeHtml(app.cmd)}">▶ ${escapeHtml(app.label)}</button>`
+          ? `<button class="icon-btn run-app electron-app" data-path="${ep}" title="アプリを起動">🚀</button>`
+          : `<button class="icon-btn run-app" data-path="${ep}" data-cmd="${escapeHtml(app.cmd)}" title="アプリを起動">🚀</button>`
         : ''
       return `<div class="project-item" draggable="true" data-path="${ep}" ${attrs}>` +
         `<div class="card-top"><span class="icon">${icon}</span>` +
@@ -782,7 +1056,7 @@
         `<button class="icon-btn explorer" data-path="${ep}" title="エクスプローラー">📂</button>` +
         `<button class="icon-btn vscode"   data-path="${ep}" title="VS Code">🆚</button>` +
         runBtn +
-        `<button class="launch-btn"        data-path="${ep}">起動</button>` +
+        `<button class="launch-btn"        data-path="${ep}" title="Claude Code を起動">🥭</button>` +
         `</div></div>`
     }
 
@@ -809,7 +1083,11 @@
     }
 
     async function renderProjects() {
-      allProjects = await ipcRenderer.invoke('get-projects')
+      ;[allProjects, projectIconsMap, projectOverridesMap] = await Promise.all([
+        ipcRenderer.invoke('get-projects'),
+        ipcRenderer.invoke('get-project-icons'),
+        ipcRenderer.invoke('get-project-overrides'),
+      ])
       renderList()
     }
 
@@ -845,7 +1123,8 @@
           ipcRenderer.invoke('launch-app', p, btn.dataset.cmd)
           showToast(`${btn.dataset.cmd} を起動しました`)
         } else if (btn.classList.contains('launch-btn')) {
-          ipcRenderer.invoke('launch-claude', p, currentModel)
+          const skip = await askPermissions()
+          ipcRenderer.invoke('launch-claude', p, currentModel, skip)
           showToast('Claude Code を起動しました')
         } else if (btn.classList.contains('delete-btn')) {
           await ipcRenderer.invoke('remove-project', p)
@@ -855,11 +1134,12 @@
       })
 
       // ---- ダブルクリック委譲 ----
-      list.addEventListener('dblclick', e => {
+      list.addEventListener('dblclick', async e => {
         if (e.target.closest('button')) return
         const item = e.target.closest('.project-item')
         if (!item) return
-        ipcRenderer.invoke('launch-claude', item.dataset.path, currentModel)
+        const skip = await askPermissions()
+        ipcRenderer.invoke('launch-claude', item.dataset.path, currentModel, skip)
         showToast('Claude Code を起動しました')
       })
 
@@ -924,24 +1204,50 @@
       { key: 'delete',   label: '✕ 削除ボタン' },
     ]
 
-    const PROJ_ICONS = ['📁','🌐','📱','🤖','🎮','📊','🚀','🎨','📦','🔧','🛠️','🧪','🔒','💡','📝','⚡','🔥','💎','🐍','🦀','🐹','🐳','☁️','🏗️']
+    const PROJ_ICONS = [
+      // 基本
+      '📁','🌐','📱','🤖','🎮','📊','🚀','🎨','📦','🔧','🛠️','🧪','🔒','💡','📝','⚡','🔥','💎',
+      // 言語・技術
+      '🐍','🦀','🐹','🐳','☁️','🏗️',
+      // カメラ・映像
+      '📷','📸','🎥','📹','🎬','📡',
+      // 機械・電気
+      '⚙️','🔩','🖨️','🔌','🔋','🧲',
+      // ピクチャ・デザイン
+      '🖼️','🎑','🖌️','✏️','📐','📏',
+      // PC・デバイス
+      '💻','🖥️','🖱️','⌨️','📺','📟',
+      // 太陽・自然
+      '☀️','🌤️','🌙','⭐','🌈','❄️',
+      // 工場・建設
+      '🏭','🏗️','🔨','🪛','🪚','🪝',
+      // 地図記号
+      '🏠','🏫','🏥','🏦','⛪','🏬','🚉','⛽','🏪','⛩️','🗼','🏕️',
+      // 果物
+      '🍎','🍊','🍋','🍇','🍓','🍑','🍒','🥝','🍌','🍍','🫐','🍉','🍈','🍐','🥭','🥥',
+    ]
+
+    let projectIconsMap = {}
 
     function getProjectIcon(p) {
-      return localStorage.getItem('ccl-proj-icon:' + p) || null
+      return projectIconsMap[p] || null
     }
     function setProjectIcon(p, icon) {
-      if (!icon || icon === '📁') localStorage.removeItem('ccl-proj-icon:' + p)
-      else localStorage.setItem('ccl-proj-icon:' + p, icon)
+      if (!icon || icon === '📁') delete projectIconsMap[p]
+      else projectIconsMap[p] = icon
+      ipcRenderer.invoke('set-project-icon', p, icon)
     }
 
+    let projectOverridesMap = {}
+
     function getProjectOverrides(p) {
-      try { return JSON.parse(localStorage.getItem('ccl-proj-ovr:' + p) || 'null') || {} }
-      catch { return {} }
+      return projectOverridesMap[p] || {}
     }
 
     function setProjectOverrides(p, overrides) {
-      if (Object.keys(overrides).length === 0) localStorage.removeItem('ccl-proj-ovr:' + p)
-      else localStorage.setItem('ccl-proj-ovr:' + p, JSON.stringify(overrides))
+      if (Object.keys(overrides).length === 0) delete projectOverridesMap[p]
+      else projectOverridesMap[p] = overrides
+      ipcRenderer.invoke('set-project-overrides', p, overrides)
     }
 
     function getItemDataAttrs(p) {
@@ -1115,6 +1421,8 @@
       btnSettingsEl.classList.remove('active')
       document.getElementById('proj-settings-panel').classList.remove('open')
       currentProjPath = null
+      document.getElementById('theme-panel').classList.remove('open')
+      document.getElementById('btn-theme').classList.remove('active')
     })
     settingsPanel.addEventListener('click', e => e.stopPropagation())
 
@@ -1155,7 +1463,8 @@
 
     // ---- ヘッダーボタン ----
     document.getElementById('btn-quick').addEventListener('click', async () => {
-      const ok = await ipcRenderer.invoke('select-and-launch', currentModel)
+      const skip = await askPermissions()
+      const ok = await ipcRenderer.invoke('select-and-launch', currentModel, skip)
       if (ok) showToast('Claude Code を起動しました')
     })
     document.getElementById('btn-add').addEventListener('click', async () => {
@@ -1188,7 +1497,43 @@
 
     ipcRenderer.on('projects-updated', renderProjects)
 
+    // ---- テーマ ----
+    const THEME_ICONS = { system: '◑', dark: '🌙', light: '☀', warm: '🌿' }
+    let currentTheme = localStorage.getItem('ccl-theme') || 'system'
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme)
+      document.querySelectorAll('.theme-opt').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === theme)
+      })
+      document.getElementById('btn-theme').textContent = THEME_ICONS[theme] || '◑'
+    }
+
+    const themePanelEl = document.getElementById('theme-panel')
+    const btnThemeEl   = document.getElementById('btn-theme')
+
+    btnThemeEl.addEventListener('click', e => {
+      e.stopPropagation()
+      const open = themePanelEl.classList.toggle('open')
+      btnThemeEl.classList.toggle('active', open)
+    })
+    themePanelEl.addEventListener('click', e => e.stopPropagation())
+    document.querySelectorAll('.theme-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentTheme = btn.dataset.theme
+        localStorage.setItem('ccl-theme', currentTheme)
+        applyTheme(currentTheme)
+        themePanelEl.classList.remove('open')
+        btnThemeEl.classList.remove('active')
+      })
+    })
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (currentTheme === 'system') applyTheme('system')
+    })
+
     // ---- 初期化 ----
+    applyTheme(currentTheme)
     setupListEvents()   // イベント委譲を一度だけ設定
     initModel()
     syncModeBtn()

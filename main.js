@@ -9,6 +9,8 @@ const os = require('os')
 // app.commandLine.appendSwitch('disable-gpu')        ← 削除
 
 const PROJECTS_FILE        = path.join(app.getPath('userData'), 'projects.json')
+const PROJECT_ICONS_FILE     = path.join(app.getPath('userData'), 'projectIcons.json')
+const PROJECT_OVERRIDES_FILE = path.join(app.getPath('userData'), 'projectOverrides.json')
 const WINDOW_STATE_FILE    = path.join(app.getPath('userData'), 'windowState.json')
 const CLAUDE_SETTINGS_FILE = path.join(os.homedir(), '.claude', 'settings.json')
 const CLAUDE_DEBUG_DIR     = path.join(os.homedir(), '.claude', 'debug')
@@ -20,6 +22,8 @@ let normalBounds = null  // 最大化前の通常サイズをメモリで保持
 
 // ---- インメモリキャッシュ（毎回ディスク読み込みを回避） ----
 let projectsCache       = null
+let projectIconsCache     = null
+let projectOverridesCache = null
 let claudeSettingsCache = null
 let usageStatsCache     = null
 
@@ -71,6 +75,38 @@ function saveProjects(projects) {
   fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2))
 }
 
+// ---- プロジェクトアイコン（キャッシュ付き） ----
+function loadProjectIcons() {
+  if (projectIconsCache !== null) return projectIconsCache
+  try {
+    projectIconsCache = JSON.parse(fs.readFileSync(PROJECT_ICONS_FILE, 'utf8'))
+  } catch {
+    projectIconsCache = {}
+  }
+  return projectIconsCache
+}
+
+function saveProjectIcons(icons) {
+  projectIconsCache = icons
+  fs.writeFileSync(PROJECT_ICONS_FILE, JSON.stringify(icons, null, 2))
+}
+
+// ---- プロジェクトボタンオーバーライド（キャッシュ付き） ----
+function loadProjectOverrides() {
+  if (projectOverridesCache !== null) return projectOverridesCache
+  try {
+    projectOverridesCache = JSON.parse(fs.readFileSync(PROJECT_OVERRIDES_FILE, 'utf8'))
+  } catch {
+    projectOverridesCache = {}
+  }
+  return projectOverridesCache
+}
+
+function saveProjectOverrides(overrides) {
+  projectOverridesCache = overrides
+  fs.writeFileSync(PROJECT_OVERRIDES_FILE, JSON.stringify(overrides, null, 2))
+}
+
 // ---- Claude 設定（キャッシュ付き） ----
 function loadClaudeSettings() {
   if (claudeSettingsCache !== null) return claudeSettingsCache
@@ -88,8 +124,9 @@ function saveClaudeSettings(settings) {
 }
 
 // ---- 起動 ----
-function launchClaude(folderPath, model) {
-  const cmd = model ? `claude --model ${model}` : 'claude'
+function launchClaude(folderPath, model, skipPermissions) {
+  let cmd = model ? `claude --model ${model}` : 'claude'
+  if (skipPermissions) cmd += ' --dangerously-skip-permissions'
   if (process.platform === 'win32') {
     spawn('cmd.exe', ['/c', 'start', 'cmd.exe', '/k', cmd], {
       detached: true, stdio: 'ignore', cwd: folderPath
@@ -199,6 +236,26 @@ app.on('window-all-closed', (e) => e.preventDefault())
 // ---- IPC handlers ----
 ipcMain.handle('get-projects', () => loadProjects())
 
+ipcMain.handle('get-project-icons', () => loadProjectIcons())
+
+ipcMain.handle('set-project-icon', (_, projPath, icon) => {
+  const icons = loadProjectIcons()
+  if (!icon || icon === '📁') delete icons[projPath]
+  else icons[projPath] = icon
+  saveProjectIcons(icons)
+  return true
+})
+
+ipcMain.handle('get-project-overrides', () => loadProjectOverrides())
+
+ipcMain.handle('set-project-overrides', (_, projPath, overrides) => {
+  const all = loadProjectOverrides()
+  if (!overrides || Object.keys(overrides).length === 0) delete all[projPath]
+  else all[projPath] = overrides
+  saveProjectOverrides(all)
+  return true
+})
+
 ipcMain.handle('add-project', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory'],
@@ -222,18 +279,18 @@ ipcMain.handle('remove-project', (_, folderPath) => {
   return true
 })
 
-ipcMain.handle('launch-claude', (_, folderPath, model) => {
-  launchClaude(folderPath, model)
+ipcMain.handle('launch-claude', (_, folderPath, model, skipPermissions) => {
+  launchClaude(folderPath, model, skipPermissions)
   return true
 })
 
-ipcMain.handle('select-and-launch', async (_, model) => {
+ipcMain.handle('select-and-launch', async (_, model, skipPermissions) => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory'],
     title: 'フォルダを選択してClaude Codeを起動'
   })
   if (result.canceled) return false
-  launchClaude(result.filePaths[0], model)
+  launchClaude(result.filePaths[0], model, skipPermissions)
   return true
 })
 
@@ -286,6 +343,13 @@ ipcMain.handle('get-usage-stats', async () => {
   } catch { /* debug dir missing */ }
   usageStatsCache = { input, output, sessions }
   return usageStatsCache
+})
+
+ipcMain.handle('get-security-status', () => {
+  const settings = loadClaudeSettings()
+  const denyCount = (settings.permissions?.deny || []).length
+  const hasHook   = Array.isArray(settings.hooks?.PreToolUse) && settings.hooks.PreToolUse.length > 0
+  return { denyCount, hasHook }
 })
 
 ipcMain.handle('open-url', (_, url) => {
