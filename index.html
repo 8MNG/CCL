@@ -222,15 +222,6 @@
     }
     #btn-quick:active { transform: translateY(0); }
 
-    #btn-migrate {
-      width: 100%; padding: 5px;
-      background: transparent; color: var(--tx-5);
-      border: 1px solid var(--bd-mid); border-radius: 8px;
-      font-size: 11px; cursor: pointer; margin-top: 6px;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    #btn-migrate:hover { color: var(--tx-2); border-color: var(--tx-6); }
-
     /* Stats bar */
     #stats-bar {
       margin: 0 24px 12px;
@@ -672,7 +663,6 @@
 
     <div id="quick-launch">
       <button id="btn-quick">📂 フォルダを選んで起動</button>
-      <button id="btn-migrate">💾 PC買い替え（設定エクスポート）</button>
     </div>
 
     <div id="stats-bar">
@@ -1472,13 +1462,6 @@
     }
 
     // ---- ヘッダーボタン ----
-    document.getElementById('btn-migrate').addEventListener('click', async () => {
-      const dest = await ipcRenderer.invoke('export-settings')
-      if (dest) {
-        await ipcRenderer.invoke('open-explorer', dest)
-        showToast('設定をエクスポートしました')
-      }
-    })
     document.getElementById('btn-quick').addEventListener('click', async () => {
       const skip = await askPermissions()
       const ok = await ipcRenderer.invoke('select-and-launch', currentModel, skip)
