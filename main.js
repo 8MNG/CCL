@@ -357,6 +357,44 @@ ipcMain.handle('open-url', (_, url) => {
   return true
 })
 
+ipcMain.handle('export-settings', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+    title: 'エクスポート先のフォルダを選択'
+  })
+  if (result.canceled) return null
+
+  const date = new Date().toISOString().slice(0, 10)
+  const dest = path.join(result.filePaths[0], `ccl-export-${date}`)
+  fs.mkdirSync(dest, { recursive: true })
+
+  const files = [
+    { src: PROJECTS_FILE,         name: 'projects.json' },
+    { src: PROJECT_ICONS_FILE,    name: 'projectIcons.json' },
+    { src: PROJECT_OVERRIDES_FILE,name: 'projectOverrides.json' },
+    { src: CLAUDE_SETTINGS_FILE,  name: 'claude-settings.json' },
+  ]
+  for (const f of files) {
+    if (fs.existsSync(f.src)) fs.copyFileSync(f.src, path.join(dest, f.name))
+  }
+
+  const appData = app.getPath('userData')
+  const readme = [
+    `CCL 設定エクスポート (${date})`,
+    '',
+    '【新しいPCへの移行手順】',
+    '1. 新PCに Claude Code Launcher をインストール',
+    '2. 以下のファイルをコピー:',
+    `   projects.json         → ${appData}\\`,
+    `   projectIcons.json     → ${appData}\\`,
+    `   projectOverrides.json → ${appData}\\`,
+    `   claude-settings.json  → ${os.homedir()}\\.claude\\settings.json`,
+  ].join('\n')
+  fs.writeFileSync(path.join(dest, 'README.txt'), readme, 'utf8')
+
+  return dest
+})
+
 ipcMain.handle('launch-app', (_, folderPath, cmd) => {
   if (process.platform === 'win32') {
     spawn('cmd.exe', ['/c', 'start', 'cmd.exe', '/k', cmd], {
