@@ -1,0 +1,7 @@
+{
+  "name": "claude-launcher",
+  "type": "electron-app",
+  "status": "active",
+  "description": "Claude Codeをワンクリックで起動するデスクトップランチャー",
+  "stack": ["Electron", "Node.js"]
+}

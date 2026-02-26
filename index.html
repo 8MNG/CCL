@@ -171,8 +171,38 @@
     #titlebar .controls {
       -webkit-app-region: no-drag;
       display: flex;
+      align-items: center;
       gap: 6px;
     }
+
+    #btn-manager {
+      -webkit-app-region: no-drag;
+      background: none;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      opacity: 0.5;
+      transition: opacity 0.15s;
+      line-height: 1;
+      /* controls button の 12x12 を上書き */
+      width: auto !important;
+      height: auto !important;
+      border-radius: 4px !important;
+      margin-right: 8px;
+    }
+    #btn-manager:hover { opacity: 1; }
+
+    @keyframes wobble {
+      0%   { transform: rotate(0deg)   scale(1); }
+      20%  { transform: rotate(-18deg) scale(1.15); }
+      45%  { transform: rotate(14deg)  scale(1.1); }
+      65%  { transform: rotate(-9deg)  scale(1.05); }
+      82%  { transform: rotate(5deg)   scale(1); }
+      100% { transform: rotate(0deg)   scale(1); }
+    }
+    #btn-manager.wobble { animation: wobble 0.45s ease; }
 
     #titlebar .controls button {
       width: 12px; height: 12px;
@@ -648,6 +678,7 @@
   <div id="titlebar">
     <span class="title">⚡ Claude Launcher</span>
     <div class="controls">
+      <button id="btn-manager"  title="Project Manager を開く">🗂️</button>
       <button id="btn-minimize" title="最小化"></button>
       <button id="btn-maximize" title="最大化"></button>
       <button id="btn-close"    title="閉じる"></button>
@@ -1474,6 +1505,16 @@
     document.getElementById('btn-minimize').addEventListener('click', () => ipcRenderer.send('minimize-window'))
     document.getElementById('btn-close').addEventListener('click',    () => ipcRenderer.send('close-window'))
     document.getElementById('btn-maximize').addEventListener('click', () => ipcRenderer.send('toggle-maximize'))
+    document.getElementById('btn-manager').addEventListener('click', () => {
+      const btn = document.getElementById('btn-manager')
+      btn.classList.remove('wobble')
+      void btn.offsetWidth  // reflow でアニメーションリセット
+      btn.classList.add('wobble')
+      btn.addEventListener('animationend', () => btn.classList.remove('wobble'), { once: true })
+      const path = require('path')
+      const os   = require('os')
+      ipcRenderer.invoke('launch-electron-app', path.join(os.homedir(), 'AI', '_manager'))
+    })
 
     ipcRenderer.on('window-maximized', (_, isMax) => {
       const btn = document.getElementById('btn-maximize')
