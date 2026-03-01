@@ -1,3 +1,4 @@
+// @ts-check
 const { app, BrowserWindow, ipcMain, dialog, Tray, Menu, nativeImage, shell, screen } = require('electron')
 const { spawn } = require('child_process')
 const path = require('path')
@@ -15,16 +16,25 @@ const WINDOW_STATE_FILE    = path.join(app.getPath('userData'), 'windowState.jso
 const CLAUDE_SETTINGS_FILE = path.join(os.homedir(), '.claude', 'settings.json')
 const CLAUDE_DEBUG_DIR     = path.join(os.homedir(), '.claude', 'debug')
 
+/** @type {Electron.BrowserWindow | null} */
 let mainWindow   = null
+/** @type {Electron.Tray | null} */
 let tray         = null
+/** @type {ReturnType<typeof setTimeout> | null} */
 let saveTimer    = null
+/** @type {{x?: number, y?: number, width: number, height: number} | null} */
 let normalBounds = null  // 最大化前の通常サイズをメモリで保持
 
 // ---- インメモリキャッシュ（毎回ディスク読み込みを回避） ----
+/** @type {string[] | null} */
 let projectsCache       = null
+/** @type {Record<string, string> | null} */
 let projectIconsCache     = null
+/** @type {Record<string, Record<string, unknown>> | null} */
 let projectOverridesCache = null
+/** @type {Record<string, unknown> | null} */
 let claudeSettingsCache = null
+/** @type {{input: number, output: number, sessions: number} | null} */
 let usageStatsCache     = null
 
 // ---- ウィンドウ状態 ----
@@ -55,11 +65,12 @@ function saveWindowState() {
 }
 
 function debouncedSave() {
-  clearTimeout(saveTimer)
+  if (saveTimer !== null) clearTimeout(saveTimer)
   saveTimer = setTimeout(saveWindowState, 600)
 }
 
 // ---- プロジェクト（キャッシュ付き） ----
+/** @returns {string[]} */
 function loadProjects() {
   if (projectsCache !== null) return projectsCache
   try {
@@ -67,15 +78,17 @@ function loadProjects() {
   } catch {
     projectsCache = []
   }
-  return projectsCache
+  return /** @type {string[]} */ (projectsCache)
 }
 
+/** @param {string[]} projects */
 function saveProjects(projects) {
   projectsCache = projects  // キャッシュ更新
   fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2))
 }
 
 // ---- プロジェクトアイコン（キャッシュ付き） ----
+/** @returns {Record<string, string>} */
 function loadProjectIcons() {
   if (projectIconsCache !== null) return projectIconsCache
   try {
@@ -83,15 +96,17 @@ function loadProjectIcons() {
   } catch {
     projectIconsCache = {}
   }
-  return projectIconsCache
+  return /** @type {Record<string, string>} */ (projectIconsCache)
 }
 
+/** @param {Record<string, string>} icons */
 function saveProjectIcons(icons) {
   projectIconsCache = icons
   fs.writeFileSync(PROJECT_ICONS_FILE, JSON.stringify(icons, null, 2))
 }
 
 // ---- プロジェクトボタンオーバーライド（キャッシュ付き） ----
+/** @returns {Record<string, Record<string, unknown>>} */
 function loadProjectOverrides() {
   if (projectOverridesCache !== null) return projectOverridesCache
   try {
@@ -99,15 +114,17 @@ function loadProjectOverrides() {
   } catch {
     projectOverridesCache = {}
   }
-  return projectOverridesCache
+  return /** @type {Record<string, Record<string, unknown>>} */ (projectOverridesCache)
 }
 
+/** @param {Record<string, Record<string, unknown>>} overrides */
 function saveProjectOverrides(overrides) {
   projectOverridesCache = overrides
   fs.writeFileSync(PROJECT_OVERRIDES_FILE, JSON.stringify(overrides, null, 2))
 }
 
 // ---- Claude 設定（キャッシュ付き） ----
+/** @returns {Record<string, unknown>} */
 function loadClaudeSettings() {
   if (claudeSettingsCache !== null) return claudeSettingsCache
   try {
@@ -115,21 +132,27 @@ function loadClaudeSettings() {
   } catch {
     claudeSettingsCache = {}
   }
-  return claudeSettingsCache
+  return /** @type {Record<string, unknown>} */ (claudeSettingsCache)
 }
 
+/** @param {Record<string, unknown>} settings */
 function saveClaudeSettings(settings) {
   claudeSettingsCache = settings  // キャッシュ更新
   fs.writeFileSync(CLAUDE_SETTINGS_FILE, JSON.stringify(settings, null, 2))
 }
 
 // ---- 起動 ----
+/**
+ * @param {string} folderPath
+ * @param {string | null | undefined} model
+ * @param {boolean} [skipPermissions]
+ */
 function launchClaude(folderPath, model, skipPermissions) {
   let cmd = model ? `claude --model ${model}` : 'claude'
   if (skipPermissions) cmd += ' --dangerously-skip-permissions'
   if (process.platform === 'win32') {
-    spawn('cmd.exe', ['/c', 'start', 'cmd.exe', '/k', cmd], {
-      detached: true, stdio: 'ignore', cwd: folderPath
+    spawn('wt.exe', ['-d', folderPath, 'pwsh.exe', '-NoExit', '-Command', cmd], {
+      detached: true, stdio: 'ignore'
     }).unref()
   } else {
     spawn('bash', ['-c', cmd], {
@@ -161,25 +184,26 @@ function createWindow() {
     icon: path.join(__dirname, 'assets', 'icon.png')
   })
 
-  mainWindow.loadFile('index.html')
+  const win = mainWindow
+  win.loadFile('index.html')
 
-  mainWindow.once('ready-to-show', () => {
-    if (state.maximized) mainWindow.maximize()
-    mainWindow.show()
+  win.once('ready-to-show', () => {
+    if (state.maximized) win.maximize()
+    win.show()
   })
 
-  mainWindow.on('maximize',   () => mainWindow.webContents.send('window-maximized', true))
-  mainWindow.on('unmaximize', () => mainWindow.webContents.send('window-maximized', false))
+  win.on('maximize',   () => win.webContents.send('window-maximized', true))
+  win.on('unmaximize', () => win.webContents.send('window-maximized', false))
 
-  mainWindow.on('resize', () => {
-    if (!mainWindow.isMaximized()) { normalBounds = mainWindow.getBounds(); debouncedSave() }
+  win.on('resize', () => {
+    if (!win.isMaximized()) { normalBounds = win.getBounds(); debouncedSave() }
   })
-  mainWindow.on('move', () => {
-    if (!mainWindow.isMaximized()) { normalBounds = mainWindow.getBounds(); debouncedSave() }
+  win.on('move', () => {
+    if (!win.isMaximized()) { normalBounds = win.getBounds(); debouncedSave() }
   })
 
-  mainWindow.on('close',  () => saveWindowState())
-  mainWindow.on('closed', () => { mainWindow = null })
+  win.on('close',  () => saveWindowState())
+  win.on('closed', () => { mainWindow = null })
 }
 
 function createTray() {
@@ -188,13 +212,13 @@ function createTray() {
     ? nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
     : nativeImage.createEmpty()
 
-  tray = new Tray(icon)
-  tray.setToolTip('Claude Launcher')
+  const localTray = tray = new Tray(icon)
+  localTray.setToolTip('Claude Launcher')
 
   const updateMenu = () => {
     const projects = loadProjects()          // キャッシュから取得
     const settings = loadClaudeSettings()   // キャッシュから取得
-    const model = settings.model || null
+    const model = /** @type {string | undefined} */ (settings.model) || null
 
     const projectItems = projects.map(p => ({
       label: path.basename(p) || p,
@@ -214,11 +238,11 @@ function createTray() {
       }},
       { label: '終了', click: () => app.quit() }
     ])
-    tray.setContextMenu(contextMenu)
+    localTray.setContextMenu(contextMenu)
   }
 
   updateMenu()
-  tray.on('double-click', () => {
+  localTray.on('double-click', () => {
     if (!mainWindow) createWindow()
     else { mainWindow.show(); mainWindow.focus() }
   })
@@ -231,7 +255,7 @@ app.whenReady().then(() => {
   createTray()
 })
 
-app.on('window-all-closed', (e) => e.preventDefault())
+app.on('window-all-closed', () => { /* prevent quit */ })
 
 // ---- IPC handlers ----
 ipcMain.handle('get-projects', () => loadProjects())
@@ -257,7 +281,7 @@ ipcMain.handle('set-project-overrides', (_, projPath, overrides) => {
 })
 
 ipcMain.handle('add-project', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
+  const result = await dialog.showOpenDialog({
     properties: ['openDirectory'],
     title: 'プロジェクトフォルダを選択'
   })
@@ -267,7 +291,7 @@ ipcMain.handle('add-project', async () => {
   if (!projects.includes(folderPath)) {
     projects.push(folderPath)
     saveProjects(projects)
-    mainWindow.webContents.send('projects-updated')
+    mainWindow?.webContents.send('projects-updated')
     ipcMain.emit('projects-updated')
   }
   return folderPath
@@ -285,7 +309,7 @@ ipcMain.handle('launch-claude', (_, folderPath, model, skipPermissions) => {
 })
 
 ipcMain.handle('select-and-launch', async (_, model, skipPermissions) => {
-  const result = await dialog.showOpenDialog(mainWindow, {
+  const result = await dialog.showOpenDialog({
     properties: ['openDirectory'],
     title: 'フォルダを選択してClaude Codeを起動'
   })
@@ -346,7 +370,7 @@ ipcMain.handle('get-usage-stats', async () => {
 })
 
 ipcMain.handle('get-security-status', () => {
-  const settings = loadClaudeSettings()
+  const settings = /** @type {{permissions?: {deny?: unknown[]}, hooks?: {PreToolUse?: unknown[]}}} */ (loadClaudeSettings())
   const denyCount = (settings.permissions?.deny || []).length
   const hasHook   = Array.isArray(settings.hooks?.PreToolUse) && settings.hooks.PreToolUse.length > 0
   return { denyCount, hasHook }
@@ -360,8 +384,8 @@ ipcMain.handle('open-url', (_, url) => {
 
 ipcMain.handle('launch-app', (_, folderPath, cmd) => {
   if (process.platform === 'win32') {
-    spawn('cmd.exe', ['/c', 'start', 'cmd.exe', '/k', cmd], {
-      detached: true, stdio: 'ignore', cwd: folderPath
+    spawn('wt.exe', ['-d', folderPath, 'pwsh.exe', '-NoExit', '-Command', cmd], {
+      detached: true, stdio: 'ignore'
     }).unref()
   } else {
     spawn('bash', ['-c', cmd], {
